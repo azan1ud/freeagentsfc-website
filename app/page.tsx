@@ -3,7 +3,7 @@ import Link from "next/link";
 // Hosting URLs — swap once a new build lands. Keep these as constants so
 // the rest of the page renders from a single source of truth.
 const APK_URL =
-  "https://firebasestorage.googleapis.com/v0/b/talentbase-app.firebasestorage.app/o/public%2Fapp-debug.apk?alt=media";
+  "https://firebasestorage.googleapis.com/v0/b/talentbase-app.firebasestorage.app/o/public%2FFreeAgentsFC.apk?alt=media";
 const APP_STORE_URL =
   "https://apps.apple.com/gb/app/freeagentsfc/id6765511407";
 const TWITTER_URL = "https://x.com/FreeAgentsFC1";

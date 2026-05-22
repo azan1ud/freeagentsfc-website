@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Support — FreeAgentsFC</title>
+  <meta name="description" content="Help, FAQ, and contact for the FreeAgentsFC football scouting app." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      background: #fafaf9;
+      color: #18181b;
+      margin: 0;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    header {
+      background: linear-gradient(180deg, #071a09 0%, #000 100%);
+      color: #f4f4f5;
+      padding: 48px 24px 36px;
+    }
+    header .inner { max-width: 760px; margin: 0 auto; }
+    header .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; opacity: 0.85; }
+    header .logo {
+      width: 32px; height: 32px;
+      background: #c6f806;
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900;
+      color: #000;
+      font-size: 14px;
+    }
+    header .brand a { color: #f4f4f5; text-decoration: none; font-weight: 700; }
+    h1 { margin: 0; font-size: 36px; font-weight: 800; letter-spacing: -1px; }
+    .meta { color: #a1a1aa; font-size: 14px; margin-top: 8px; }
+    main { max-width: 760px; margin: 0 auto; padding: 40px 24px 80px; }
+    .contact-card {
+      background: #fff;
+      border: 1px solid #e4e4e7;
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 36px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .contact-card h3 { margin: 0 0 6px; font-size: 14px; color: #71717a; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    .contact-card a { color: #18181b; font-size: 16px; font-weight: 600; text-decoration: none; }
+    .contact-card a:hover { color: #1d4ed8; }
+    @media (max-width: 540px) {
+      .contact-card { grid-template-columns: 1fr; }
+    }
+    h2 { font-size: 22px; margin-top: 40px; margin-bottom: 4px; font-weight: 700; }
+    .faq { border-bottom: 1px solid #e4e4e7; }
+    details { padding: 18px 0; border-bottom: 1px solid #e4e4e7; }
+    details:last-child { border-bottom: none; }
+    summary { cursor: pointer; font-size: 17px; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: "+"; font-size: 22px; font-weight: 400; color: #a1a1aa; transition: transform 0.2s; }
+    details[open] summary::after { content: "−"; }
+    details p, details ul { margin-top: 12px; color: #3f3f46; font-size: 15px; }
+    a { color: #1d4ed8; }
+    footer {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 28px 24px 40px;
+      font-size: 13px;
+      color: #71717a;
+      border-top: 1px solid #e4e4e7;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="inner">
+      <div class="brand">
+        <div class="logo">FA</div>
+        <a href="/">FreeAgentsFC</a>
+      </div>
+      <h1>Support</h1>
+      <div class="meta">We respond within 1 working day.</div>
+    </div>
+  </header>
+
+  <main>
+    <div class="contact-card">
+      <div>
+        <h3>Email</h3>
+        <a href="mailto:support@freeagentsfc.com">support@freeagentsfc.com</a>
+      </div>
+      <div>
+        <h3>Status</h3>
+        <a href="/">All systems normal</a>
+      </div>
+    </div>
+
+    <h2>Frequently asked questions</h2>
+
+    <details>
+      <summary>How do I create a player profile?</summary>
+      <p>
+        Sign up with email, Apple, or Google. Pick "Player" as your role. The 4-step
+        onboarding asks for positions, level + availability, playing style + strengths,
+        and recent stats. The whole flow takes about 3 minutes.
+      </p>
+    </details>
+
+    <details>
+      <summary>Is FreeAgentsFC free?</summary>
+      <p>
+        Yes. Building a profile, being discovered, and connecting with coaches and
+        scouts are all free. We may add optional premium features later (advanced
+        filters, verified badges) but the core network will stay free.
+      </p>
+    </details>
+
+    <details>
+      <summary>How do scouts and coaches find me?</summary>
+      <p>
+        Scouts, coaches, agents, and clubs use the Discovery feed. They can filter
+        by position, level, location, travel radius, and availability. Profiles
+        with completed information and recent activity rank higher.
+      </p>
+    </details>
+
+    <details>
+      <summary>Can I delete my account?</summary>
+      <p>
+        Yes. Open the app → Settings → Delete Account. Your profile, photos,
+        videos, and messages are permanently removed within 30 days. You can also
+        email <a href="mailto:support@freeagentsfc.com">support@freeagentsfc.com</a> to request
+        deletion if you can't sign in.
+      </p>
+    </details>
+
+    <details>
+      <summary>I forgot my password.</summary>
+      <p>
+        On the sign-in screen tap "Forgot password?" and enter your email. We'll
+        send a reset link from <code>noreply@FreeAgentsFC-app.firebaseapp.com</code>.
+        If you signed up with Apple or Google, use that provider — there is no
+        password to reset.
+      </p>
+    </details>
+
+    <details>
+      <summary>Someone is impersonating me. What do I do?</summary>
+      <p>
+        Open the impostor's profile → tap the menu (three dots) → Report. Pick
+        "Impersonation" and add a short note. Our trust &amp; safety team reviews
+        reports within 24 hours. For urgent cases, email
+        <a href="mailto:support@freeagentsfc.com">support@freeagentsfc.com</a> with a screenshot.
+      </p>
+    </details>
+
+    <details>
+      <summary>How do I report a bug?</summary>
+      <p>
+        Email <a href="mailto:support@freeagentsfc.com">support@freeagentsfc.com</a> with: a short
+        description, what you were trying to do, your phone model and OS version,
+        and a screenshot if possible. The faster you tell us, the faster we ship a
+        fix.
+      </p>
+    </details>
+
+    <details>
+      <summary>Can I use FreeAgentsFC outside the UK?</summary>
+      <p>
+        Yes — anyone can sign up and the app works globally. We're starting with
+        the UK grassroots and non-league scene because that's where we have the
+        deepest relationships, but the platform itself is open.
+      </p>
+    </details>
+
+    <details>
+      <summary>What about under-18s?</summary>
+      <p>
+        Players aged 13–17 can use FreeAgentsFC with the consent of a parent,
+        guardian, or coach. We don't allow anyone under 13. If you're a parent or
+        guardian and want a profile removed, email
+        <a href="mailto:support@freeagentsfc.com">support@freeagentsfc.com</a>.
+      </p>
+    </details>
+
+    <details>
+      <summary>How is my data stored?</summary>
+      <p>
+        On Google Firebase (UK / EU regions), with TLS encryption in transit and
+        per-user access rules enforced server-side. We don't sell your data and we
+        don't run third-party advertising. Full details in our
+        <a href="/privacy.html">Privacy Policy</a>.
+      </p>
+    </details>
+
+    <details>
+      <summary>Is FreeAgentsFC available on Android?</summary>
+      <p>
+        Yes — both iOS and Android. If the listing isn't live in your region yet,
+        check back soon or email us.
+      </p>
+    </details>
+
+    <h2>Still need help?</h2>
+    <p>
+      Email <a href="mailto:support@freeagentsfc.com">support@freeagentsfc.com</a> with your
+      account email and a description of the issue. Most replies go out within
+      one working day.
+    </p>
+  </main>
+
+  <footer>
+    © 2026 Keplo Ltd · <a href="/">Home</a> · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a>
+  </footer>
+</body>
+</html>
+

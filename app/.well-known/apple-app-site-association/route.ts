@@ -21,7 +21,7 @@ const PAYLOAD = {
     apps: [],
     details: [
       {
-        appIDs: ["ABCDE12345.uk.keplo.talentbase"], // TODO: replace TEAM_ID
+        appIDs: ["X5LAZ2X9W7.uk.keplo.talentbase"],
         components: [
           {
             "/": "/r/*",
@@ -32,7 +32,7 @@ const PAYLOAD = {
     ],
   },
   webcredentials: {
-    apps: ["ABCDE12345.uk.keplo.talentbase"], // shared web-credentials w/ Sign in with Apple
+    apps: ["X5LAZ2X9W7.uk.keplo.talentbase"],
   },
 };
 

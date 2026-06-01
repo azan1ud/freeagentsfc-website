@@ -82,29 +82,32 @@ export default function ReferralLandingPage() {
       if (invalidCode) return;
       if (p === "android") {
         // Play Install Referrer Library reads the `referrer` param
-        // post-install. Encode the affiliate code so we can map it
-        // back on first app launch.
+        // post-install. Encode the affiliate code so we can map it back
+        // on first app launch — Android needs no clipboard.
         const ref = encodeURIComponent(`fafc_ref=${code}`);
         window.location.href = `${PLAY_STORE_BASE}&referrer=${ref}`;
-      } else if (p === "ios") {
-        // iOS has no install-referrer equivalent — we rely on the
-        // clipboard fallback the app reads on first launch, plus
-        // the cookie if the user opens the in-app webview.
-        //
-        // Write the SAME `fafc_ref=<CODE>` token the Android referrer
-        // uses. The app only captures a clipboard string that carries
-        // this marker, so it never grabs an unrelated 6-char string the
-        // user happened to have copied.
-        if (navigator.clipboard?.writeText) {
-          navigator.clipboard.writeText(`fafc_ref=${code}`).catch(() => {});
-        }
-        window.location.href = APP_STORE_URL;
       }
-      // desktop — leave them on this page with the store buttons
+      // iOS + desktop: do NOT auto-redirect. iOS only allows a page to
+      // write to the clipboard from inside a user gesture, so we keep
+      // them on this page and copy the `fafc_ref=<CODE>` token in the
+      // App Store button's tap handler (goToAppStore) instead.
     }, 1500);
     return () => window.clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code]);
+
+  // iOS only lets a page write to the clipboard from a user gesture, so
+  // the App Store hand-off copies the `fafc_ref=<CODE>` token *here, in
+  // the tap*, then navigates. The app reads that token off the clipboard
+  // on first launch to attribute the install to this affiliate.
+  async function goToAppStore() {
+    try {
+      await navigator.clipboard.writeText(`fafc_ref=${code}`);
+    } catch {
+      /* clipboard blocked — the visible code + manual entry still cover it */
+    }
+    window.location.href = APP_STORE_URL;
+  }
 
   if (invalidCode) {
     return (
@@ -164,8 +167,9 @@ export default function ReferralLandingPage() {
             {code}
           </div>
           <p className="mt-3 text-xs text-white/55">
-            We&apos;ve saved your invite. If the app doesn&apos;t auto-detect
-            it, just enter this code on the signup screen.
+            Tap below to get the app — your invite comes with you. If it
+            doesn&apos;t auto-detect, just enter this code on the signup
+            screen.
           </p>
         </div>
 
@@ -179,21 +183,23 @@ export default function ReferralLandingPage() {
               Get it on Google Play
             </a>
           ) : (
-            <a
-              href={APP_STORE_URL}
+            <button
+              type="button"
+              onClick={() => void goToAppStore()}
               className="rounded-xl bg-lime py-4 font-extrabold text-black"
             >
               Get it on the App Store
-            </a>
+            </button>
           )}
           {/* The other store, in case detection was wrong */}
           {platform === "android" ? (
-            <a
-              href={APP_STORE_URL}
+            <button
+              type="button"
+              onClick={() => void goToAppStore()}
               className="rounded-xl border border-line/60 py-4 font-bold text-white/80"
             >
               I&apos;m on iPhone instead
-            </a>
+            </button>
           ) : (
             <a
               href={`${PLAY_STORE_BASE}&referrer=${encodeURIComponent(`fafc_ref=${code}`)}`}

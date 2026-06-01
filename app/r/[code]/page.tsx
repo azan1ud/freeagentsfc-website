@@ -90,8 +90,13 @@ export default function ReferralLandingPage() {
         // iOS has no install-referrer equivalent — we rely on the
         // clipboard fallback the app reads on first launch, plus
         // the cookie if the user opens the in-app webview.
+        //
+        // Write the SAME `fafc_ref=<CODE>` token the Android referrer
+        // uses. The app only captures a clipboard string that carries
+        // this marker, so it never grabs an unrelated 6-char string the
+        // user happened to have copied.
         if (navigator.clipboard?.writeText) {
-          navigator.clipboard.writeText(code).catch(() => {});
+          navigator.clipboard.writeText(`fafc_ref=${code}`).catch(() => {});
         }
         window.location.href = APP_STORE_URL;
       }
@@ -159,8 +164,8 @@ export default function ReferralLandingPage() {
             {code}
           </div>
           <p className="mt-3 text-xs text-white/55">
-            We&apos;ve copied this to your clipboard. If the app doesn&apos;t
-            auto-detect, paste it on the signup screen.
+            We&apos;ve saved your invite. If the app doesn&apos;t auto-detect
+            it, just enter this code on the signup screen.
           </p>
         </div>
 

@@ -15,6 +15,14 @@ const nextConfig = {
         destination:
           "https://talentbase-app.web.app/p/index.html?uid=:uid",
       },
+      // Community-post share links: https://freeagentsfc.com/c/<postId>
+      // proxy to the Firebase-hosted /c/ landing page (same project that
+      // owns the Firestore feedItems data), mirroring the /p/ rewrite.
+      {
+        source: "/c/:id",
+        destination:
+          "https://talentbase-app.web.app/c/index.html?id=:id",
+      },
     ];
   },
 };

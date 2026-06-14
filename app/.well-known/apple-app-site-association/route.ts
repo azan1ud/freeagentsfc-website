@@ -14,6 +14,7 @@ import { NextResponse } from "next/server";
 //
 // Paths claimed by the app:
 //   /r/*   — affiliate referral landing pages
+//   /c/*   — community post share links (open the post in the app)
 //   (we intentionally do NOT claim every path — the marketing pages
 //    should stay browser-resolvable.)
 const PAYLOAD = {
@@ -26,6 +27,10 @@ const PAYLOAD = {
           {
             "/": "/r/*",
             comment: "Affiliate referral landing — deep-link into the app",
+          },
+          {
+            "/": "/c/*",
+            comment: "Community post share — deep-link into the post",
           },
         ],
       },

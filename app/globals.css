@@ -2,6 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* The app's own display face — shipped inside FreeAgentsFC itself, so
+   the site speaks with the product's actual voice. */
+@font-face {
+  font-family: "BrickRecords";
+  src: url("/fonts/BrickRecords.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   html {
     background-color: #0a0b0d;
@@ -11,10 +21,84 @@
   body {
     @apply font-sans antialiased;
   }
+  ::selection {
+    background: #c6f806;
+    color: #0a0b0d;
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* Orchestrated hero entrance — staggered via --d custom property. */
+  .rise {
+    opacity: 0;
+    transform: translateY(22px);
+    animation: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: var(--d, 0s);
+  }
+  @keyframes rise {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Trials ticker — seamless loop over a duplicated track. */
+  .ticker-track {
+    display: flex;
+    width: max-content;
+    animation: ticker 46s linear infinite;
+  }
+  .ticker-track:hover {
+    animation-play-state: paused;
+  }
+  @keyframes ticker {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* Scroll-reveal (toggled by IntersectionObserver). */
+  .reveal {
+    opacity: 0;
+    transform: translateY(26px);
+    transition:
+      opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .reveal.is-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Slow float for the hero phone. */
+  .float-slow {
+    animation: floaty 7s ease-in-out infinite;
+  }
+  @keyframes floaty {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+  .ticker-track,
+  .float-slow {
+    animation: none !important;
   }
 }

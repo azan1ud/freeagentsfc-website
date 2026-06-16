@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "FreeAgentsFC — Where players get scouted",
+  title: "FreeAgentsFC — Get seen. Get signed.",
   description:
-    "Get scouted, find clubs, and connect with coaches across the UK football pyramid. Download FreeAgentsFC on iOS and Android.",
+    "The UK football marketplace where free agents, coaches, clubs and scouts find each other. 1,491 members, 6,474 connections and 742 real opportunities in month one. Free on iOS and Android.",
   openGraph: {
-    title: "FreeAgentsFC — Where players get scouted",
+    title: "FreeAgentsFC — Get seen. Get signed.",
     description:
-      "Get scouted, find clubs, and connect with coaches across the UK football pyramid.",
+      "The UK football marketplace where free agents, coaches, clubs and scouts find each other. Real profiles, real trials, real conversations that turn into contracts.",
     url: "https://freeagentsfc.com",
     siteName: "FreeAgentsFC",
     type: "website",

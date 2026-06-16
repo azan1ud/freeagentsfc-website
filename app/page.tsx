@@ -1,26 +1,214 @@
-import Link from "next/link";
+"use client";
 
-// Hosting URLs — swap once a new build lands. Keep these as constants so
-// the rest of the page renders from a single source of truth.
-const APK_URL =
-  "https://firebasestorage.googleapis.com/v0/b/talentbase-app.firebasestorage.app/o/public%2FFreeAgentsFC.apk?alt=media";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+
+// ─── Single source of truth ───────────────────────────────────────────
+
 const APP_STORE_URL =
   "https://apps.apple.com/gb/app/freeagentsfc/id6765511407";
+const PLAY_STORE_URL =
+  "https://play.google.com/store/apps/details?id=com.freeagentsfc.app";
 const TWITTER_URL = "https://x.com/FreeAgentsFC1";
+
+// Real production numbers — counted from the live database, 11 Jun 2026.
+// If a number isn't true, it doesn't ship.
+const PROOF = {
+  members: 1491,
+  connections: 6474,
+  numbersSwapped: 389,
+  chatsThatLed: 742,
+  trials: 38,
+  applications: 89,
+};
+
+// Real, current trial posts (titles + live applicant counts).
+const TICKER_TRIALS = [
+  "Sporting Bengal United — Step 5 Trials · 15 applied",
+  "Barnes FC Trials · 6 applied",
+  "Crawley Green FC Open Trial Day · 7 applied",
+  "Maidenhead Town Trial Day · 4 applied",
+  "Darlington FC U23s Trial",
+  "Dagenham United FC Trials · 4 applied",
+  "Stotfold FC Reserve Team Open Trial",
+  "Kulture FC Pre-Season Open Training",
+  "Corinthian FC U23 Trials",
+  "BAKERS 693 Open Training Session · 5 applied",
+];
+
+// Real in-app feedback, verbatim.
+const QUOTES = [
+  {
+    big: true,
+    text:
+      "Finally getting seen by clubs at the level I'm actually looking for. My dad told me this would help — and it has.",
+    who: "Player",
+    role: "Free agent",
+  },
+  {
+    text: "Managed to get a few decent offers on the back of that app mate — nice one.",
+    who: "Player",
+    role: "Got offers",
+  },
+  {
+    text: "Oi, your app is unbelievable btw — Game Changer ‼️",
+    who: "Member",
+    role: "Early member",
+  },
+  {
+    text: "No bother, what a class app by the way.",
+    who: "Player",
+    role: "Member",
+  },
+];
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-ink text-white selection:bg-lime selection:text-black">
+    <main className="min-h-screen bg-ink text-white">
       <Nav />
       <Hero />
-      <Marquee />
-      <Features />
-      <HowItWorks />
-      <Download />
+      <TrialsTicker />
+      <Proof />
+      <TwoSides />
       <Testimonials />
-      <FeedbackGuide />
+      <YourMove />
       <Footer />
     </main>
+  );
+}
+
+// ─── Shared bits ──────────────────────────────────────────────────────
+
+/** Scroll-reveal wrapper — adds .is-in when ~15% visible. */
+function Reveal({
+  children,
+  className = "",
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          el.classList.add("is-in");
+          io.disconnect();
+        }
+      },
+      { threshold: 0.15 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <div
+      ref={ref}
+      className={`reveal ${className}`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** Counts from 0 → `to` the first time it scrolls into view. */
+function Count({ to, className = "" }: { to: number; className?: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let raf = 0;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        io.disconnect();
+        const t0 = performance.now();
+        const dur = 1700;
+        const tick = (t: number) => {
+          const p = Math.min(1, (t - t0) / dur);
+          const ease = 1 - Math.pow(1 - p, 4); // ease-out-quart
+          setVal(Math.round(to * ease));
+          if (p < 1) raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+      },
+      { threshold: 0.4 }
+    );
+    io.observe(el);
+    return () => {
+      io.disconnect();
+      cancelAnimationFrame(raf);
+    };
+  }, [to]);
+  return (
+    <span ref={ref} className={className}>
+      {val.toLocaleString("en-GB")}
+    </span>
+  );
+}
+
+function RatingChip({ className = "" }: { className?: string }) {
+  return (
+    <span
+      className={`inline-flex items-center gap-2.5 rounded-full border border-lime/35 bg-[#12160e] px-4 py-2 ${className}`}
+    >
+      <span className="text-[13px] tracking-[0.2em] text-lime">★★★★★</span>
+      <span className="text-[12px] font-extrabold tracking-tight text-white">
+        5.0 · 28 ratings
+      </span>
+    </span>
+  );
+}
+
+// Store badges — drawn in-palette (mono glyphs on hairline surfaces) so
+// they belong to the page instead of shouting their own colours.
+function StoreBadges({ className = "" }: { className?: string }) {
+  return (
+    <div className={`flex flex-wrap items-center gap-3 ${className}`}>
+      <Link
+        href={APP_STORE_URL}
+        target="_blank"
+        rel="noopener"
+        className="group flex items-center gap-3 rounded-2xl border border-white/15 bg-white/[0.03] px-5 py-3 transition hover:border-lime/50 hover:bg-white/[0.06]"
+      >
+        <svg viewBox="0 0 384 512" className="h-7 w-7 fill-white" aria-hidden>
+          <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z" />
+        </svg>
+        <span className="text-left leading-none">
+          <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-white/55">
+            Download on the
+          </span>
+          <span className="mt-1 block text-[16px] font-extrabold tracking-tight">
+            App Store
+          </span>
+        </span>
+      </Link>
+      <Link
+        href={PLAY_STORE_URL}
+        target="_blank"
+        rel="noopener"
+        className="group flex items-center gap-3 rounded-2xl border border-white/15 bg-white/[0.03] px-5 py-3 transition hover:border-lime/50 hover:bg-white/[0.06]"
+      >
+        <svg viewBox="0 0 512 512" className="h-6 w-6 fill-white" aria-hidden>
+          <path d="M325.3 234.3 104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z" />
+        </svg>
+        <span className="text-left leading-none">
+          <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-white/55">
+            Get it on
+          </span>
+          <span className="mt-1 block text-[16px] font-extrabold tracking-tight">
+            Google Play
+          </span>
+        </span>
+      </Link>
+    </div>
   );
 }
 
@@ -28,43 +216,40 @@ export default function Home() {
 
 function Nav() {
   return (
-    <nav className="sticky top-0 z-40 border-b border-line/60 bg-ink/70 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 lg:px-10">
+    <nav className="sticky top-0 z-40 border-b border-line bg-ink/75 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5 lg:px-10">
         <Link href="/" className="flex items-center gap-2.5">
-          <Logo />
+          <Image
+            src="/logo.png"
+            alt="FreeAgentsFC"
+            width={34}
+            height={34}
+            className="rounded-[9px]"
+            priority
+          />
           <span className="text-[15px] font-extrabold tracking-tight">
             FreeAgentsFC
           </span>
         </Link>
-        <div className="hidden items-center gap-7 text-sm font-semibold text-white/70 md:flex">
-          <Link href="#features" className="hover:text-white">
-            Features
+        <div className="hidden items-center gap-8 text-[13.5px] font-semibold text-white/60 md:flex">
+          <Link href="#proof" className="transition hover:text-white">
+            The numbers
           </Link>
-          <Link href="#how" className="hover:text-white">
+          <Link href="#sides" className="transition hover:text-white">
             How it works
           </Link>
-          <Link href="#download" className="hover:text-white">
-            Download
+          <Link href="#saying" className="transition hover:text-white">
+            What people say
           </Link>
         </div>
         <Link
-          href="#download"
-          className="rounded-full bg-lime px-4 py-2 text-[13px] font-extrabold tracking-tight text-black transition hover:scale-[1.03]"
+          href="#get"
+          className="rounded-full bg-lime px-4.5 px-5 py-2 text-[13px] font-extrabold tracking-tight text-black transition hover:brightness-110"
         >
-          Get the app →
+          Get the app
         </Link>
       </div>
     </nav>
-  );
-}
-
-function Logo() {
-  return (
-    <div className="relative grid h-8 w-8 place-items-center overflow-hidden rounded-lg bg-gradient-to-br from-lime to-[#9fce04] text-black shadow-[0_0_0_1px_rgba(255,255,255,0.08)_inset]">
-      <span className="text-[15px] font-black leading-none tracking-tighter">
-        F
-      </span>
-    </div>
   );
 }
 
@@ -73,640 +258,367 @@ function Logo() {
 function Hero() {
   return (
     <section className="relative overflow-hidden">
-      {/* Layered radial gradients — soft lime glow top-left, denser
-          pitch-green bottom-right. Cheaper than an image, doesn't
-          shift on resize. */}
+      {/* Floodlight wash + faint pitch markings (centre circle + halfway
+          line) — the brand's geometry instead of a generic tech grid. */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 -z-10"
         style={{
           background:
-            "radial-gradient(ellipse 80% 60% at 15% 0%, rgba(198,248,6,0.22) 0%, transparent 55%), radial-gradient(ellipse 70% 60% at 90% 100%, rgba(76,175,80,0.18) 0%, transparent 60%), linear-gradient(180deg, #0a0b0d 0%, #0a0b0d 100%)",
+            "radial-gradient(ellipse 75% 55% at 20% -10%, rgba(198,248,6,0.14) 0%, transparent 55%), radial-gradient(ellipse 60% 50% at 95% 105%, rgba(34,84,44,0.45) 0%, transparent 60%)",
         }}
       />
-      {/* Subtle grid — premium fintech look, suggests data without
-          shouting. */}
-      <div
+      <svg
         aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.07]"
-        style={{
-          backgroundImage:
-            "linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px)",
-          backgroundSize: "56px 56px",
-          maskImage:
-            "linear-gradient(180deg, black 0%, black 60%, transparent 100%)",
-        }}
-      />
-
-      <div className="mx-auto grid max-w-7xl gap-14 px-6 py-24 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:gap-20 lg:px-10 lg:py-32">
-        <div>
-          <span className="inline-flex items-center gap-2 rounded-full border border-lime/30 bg-lime/10 px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-lime">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-lime" />
-            Live · iOS &amp; Android
-          </span>
-          <h1 className="mt-7 text-balance text-[44px] font-black leading-[0.95] tracking-[-0.04em] sm:text-[56px] lg:text-[72px]">
-            Where players
-            <br />
-            get{" "}
-            <span className="relative inline-block">
-              <span className="relative z-10 text-lime">scouted.</span>
-              <span
-                aria-hidden
-                className="absolute inset-x-0 -bottom-1 h-3 -skew-x-[18deg] bg-lime/15"
-              />
-            </span>
-          </h1>
-          <p className="mt-7 max-w-xl text-balance text-lg leading-relaxed text-white/65 md:text-xl">
-            One platform for free agents, coaches, recruiters and clubs.
-            Build a profile that gets you found by the people who
-            actually sign players.
-          </p>
-          <div className="mt-10 flex flex-wrap items-center gap-3">
-            <Link
-              href="#download"
-              className="group inline-flex items-center gap-2 rounded-2xl bg-lime px-6 py-4 text-[15px] font-black tracking-tight text-black shadow-[0_8px_30px_-8px_rgba(198,248,6,0.6)] transition hover:scale-[1.02] hover:shadow-[0_10px_40px_-8px_rgba(198,248,6,0.8)]"
-            >
-              Download the app
-              <span className="transition-transform group-hover:translate-x-0.5">
-                →
-              </span>
-            </Link>
-            <Link
-              href={APP_STORE_URL}
-              target="_blank"
-              rel="noopener"
-              className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/[0.03] px-6 py-4 text-[15px] font-bold text-white transition hover:border-white/30 hover:bg-white/[0.07]"
-            >
-              <AppleGlyphMini />
-              App Store
-            </Link>
-          </div>
-          <div className="mt-10 flex flex-wrap items-center gap-7 text-[13px] font-medium text-white/55">
-            <Stat number="100" label="founding members" />
-            <Divider />
-            <Stat number="0£" label="to join · no paywall" />
-            <Divider />
-            <Stat number="UK" label="football pyramid" />
-          </div>
-        </div>
-        <HeroVisual />
-      </div>
-    </section>
-  );
-}
-
-function Stat({ number, label }: { number: string; label: string }) {
-  return (
-    <div>
-      <div className="text-lg font-black tracking-tight text-white">
-        {number}
-      </div>
-      <div className="text-xs uppercase tracking-widest">{label}</div>
-    </div>
-  );
-}
-
-function Divider() {
-  return <span className="h-8 w-px bg-white/10" />;
-}
-
-/// Premium hero visual — instead of a fake phone mockup we float
-/// three skewed cards in the same look as the app's player-detail
-/// surfaces. Suggests app feel without faking screenshots, and
-/// degrades gracefully on small screens.
-function HeroVisual() {
-  return (
-    <div className="relative mx-auto w-full max-w-[520px]">
-      <div
-        aria-hidden
-        className="absolute -inset-10 -z-10 rounded-[3rem] bg-gradient-to-br from-lime/15 via-transparent to-transparent blur-2xl"
-      />
-      <div className="relative h-[540px]">
-        {/* Back card — stat-heavy player */}
-        <FloatingCard
-          className="absolute right-0 top-0 w-[78%] rotate-[5deg]"
-          tone="dim"
-        >
-          <CardHeader
-            initials="MO"
-            name="Marcus O."
-            tag="CB · Step 3"
-            verified
-          />
-          <div className="mt-5 grid grid-cols-3 gap-3 text-center">
-            <KV k="APPS" v="28" />
-            <KV k="GOALS" v="2" />
-            <KV k="CLEAN" v="11" />
-          </div>
-          <div className="mt-5 flex flex-wrap gap-1.5">
-            <Pill>Reads play</Pill>
-            <Pill>Aerial</Pill>
-          </div>
-        </FloatingCard>
-
-        {/* Mid card — connection / message */}
-        <FloatingCard
-          className="absolute left-0 top-[36%] w-[68%] -rotate-[4deg]"
-          tone="lime"
-        >
-          <div className="flex items-center gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-full bg-black/15 text-xs font-black text-black">
-              JT
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="text-[12px] font-extrabold text-black">
-                Coach Tomlin
-              </div>
-              <div className="text-[10px] font-semibold text-black/60">
-                Step 4 · Hackney FC
-              </div>
-            </div>
-          </div>
-          <div className="mt-3 rounded-xl bg-black/10 px-3 py-2 text-[12px] leading-tight text-black/85">
-            “Saw your reel — want to come down for a session
-            Wednesday?”
-          </div>
-        </FloatingCard>
-
-        {/* Front card — featured striker */}
-        <FloatingCard
-          className="absolute bottom-0 right-2 w-[80%] rotate-[-3deg] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.6)]"
-          tone="dark"
-        >
-          <div className="flex items-center justify-between">
-            <CardHeader
-              initials="AD"
-              name="Ade D."
-              tag="ST · Step 5"
-              compact
-            />
-            <span className="rounded-full bg-lime/20 px-2 py-1 text-[10px] font-extrabold uppercase tracking-widest text-lime">
-              Founding #42
-            </span>
-          </div>
-          <div className="mt-4 grid grid-cols-4 gap-2 text-center">
-            <KV k="APPS" v="22" />
-            <KV k="G" v="18" big />
-            <KV k="A" v="9" />
-            <KV k="G+A/90" v="1.4" />
-          </div>
-          <div className="mt-4 grid grid-cols-[auto_1fr] items-center gap-3">
-            <div className="rounded-lg border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-[10px] font-extrabold uppercase tracking-widest text-white/70">
-              10 MI · London
-            </div>
-            <div className="h-2 flex-1 rounded-full bg-white/5">
-              <div className="h-full w-[78%] rounded-full bg-gradient-to-r from-lime to-[#9fce04]" />
-            </div>
-          </div>
-        </FloatingCard>
-      </div>
-    </div>
-  );
-}
-
-function FloatingCard({
-  children,
-  className = "",
-  tone = "dim",
-}: {
-  children: React.ReactNode;
-  className?: string;
-  tone?: "dim" | "dark" | "lime";
-}) {
-  const tones: Record<string, string> = {
-    dim: "bg-card/90 border-white/8 backdrop-blur-xl",
-    dark: "bg-[#0e1014]/95 border-white/10 backdrop-blur-xl",
-    lime: "bg-lime border-lime",
-  };
-  return (
-    <div
-      className={`rounded-3xl border p-5 shadow-2xl ${tones[tone]} ${className}`}
-    >
-      {children}
-    </div>
-  );
-}
-
-function CardHeader({
-  initials,
-  name,
-  tag,
-  verified,
-  compact,
-}: {
-  initials: string;
-  name: string;
-  tag: string;
-  verified?: boolean;
-  compact?: boolean;
-}) {
-  return (
-    <div className="flex items-center gap-3">
-      <div
-        className={`grid place-items-center rounded-full bg-gradient-to-br from-white/15 to-white/5 font-black text-white ${
-          compact ? "h-9 w-9 text-xs" : "h-11 w-11 text-sm"
-        }`}
+        className="pointer-events-none absolute left-1/2 top-0 -z-10 h-full w-[1600px] -translate-x-1/2 opacity-[0.05]"
+        viewBox="0 0 1600 900"
+        fill="none"
       >
-        {initials}
-      </div>
-      <div>
-        <div className="flex items-center gap-1.5 text-[13px] font-extrabold tracking-tight text-white">
-          {name}
-          {verified && (
-            <svg
-              viewBox="0 0 24 24"
-              className="h-3.5 w-3.5 fill-lime"
-              aria-hidden
-            >
-              <path d="M12 2l2.39 4.84L20 7.27l-4 3.9.94 5.51L12 14.77 7.06 16.68 8 11.17l-4-3.9 5.61-.43L12 2z" />
-            </svg>
-          )}
-        </div>
-        <div className="text-[11px] font-semibold text-white/55">{tag}</div>
-      </div>
-    </div>
-  );
-}
-
-function KV({ k, v, big }: { k: string; v: string; big?: boolean }) {
-  return (
-    <div className="rounded-lg bg-white/[0.04] px-2 py-2.5">
-      <div
-        className={`font-black tracking-tight ${
-          big ? "text-2xl text-lime" : "text-base text-white"
-        }`}
-      >
-        {v}
-      </div>
-      <div className="text-[9px] font-bold uppercase tracking-widest text-white/45">
-        {k}
-      </div>
-    </div>
-  );
-}
-
-function Pill({ children }: { children: React.ReactNode }) {
-  return (
-    <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-widest text-white/75">
-      {children}
-    </span>
-  );
-}
-
-function AppleGlyphMini() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden>
-      <path d="M16.365 1.43c0 1.14-.493 2.27-1.177 3.08-.823.99-2.18 1.76-3.282 1.67-.144-1.04.444-2.18 1.105-2.93.792-.91 2.16-1.63 3.354-1.82zm4.43 16.36c-.65 1.42-.97 2.05-1.81 3.31-1.18 1.76-2.85 3.96-4.91 3.98-1.83.02-2.3-1.19-4.78-1.18-2.48.01-2.99 1.2-4.82 1.19-2.06-.02-3.64-2.01-4.82-3.77C-.27 17.21-.18 13.4 1.55 11.6c1.22-1.27 2.81-2.01 4.42-2.04 2.07-.03 4.02 1.39 5.27 1.39 1.25 0 3.55-1.71 5.99-1.46.98.04 3.71.4 5.46 2.99-.14.09-3.28 1.91-3.24 5.71.04 4.55 4.0 6.07 4.04 6.09-.03.1-.64 2.21-2.13 4.39z" />
-    </svg>
-  );
-}
-
-// ─── Marquee bar ──────────────────────────────────────────────────────
-
-function Marquee() {
-  const items = [
-    "Premier League",
-    "Championship",
-    "League One",
-    "League Two",
-    "National League",
-    "Step 3",
-    "Step 4",
-    "Step 5",
-    "Step 6",
-    "WSL",
-    "Women's Championship",
-    "FA WNL",
-    "Academy",
-  ];
-  return (
-    <section className="border-y border-line/60 bg-white/[0.015]">
-      <div className="mx-auto max-w-7xl overflow-hidden px-6 py-6 lg:px-10">
-        <div className="mb-4 text-center text-[11px] font-bold uppercase tracking-[0.24em] text-white/40">
-          Covering the full pyramid
-        </div>
-        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-sm font-extrabold tracking-tight text-white/45">
-          {items.map((it) => (
-            <span key={it}>{it}</span>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── Features ─────────────────────────────────────────────────────────
-
-function Features() {
-  return (
-    <section id="features" className="border-b border-line/60">
-      <div className="mx-auto max-w-7xl px-6 py-28 lg:px-10">
-        <SectionHeader
-          eyebrow="The platform"
-          title="Built for grassroots scouting."
-          subtitle="No CVs in DMs. No “check my Instagram”. One profile, all the people who matter — and tools to actually find each other."
-        />
-        <div className="mt-16 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-          <FeatureCard
-            title="Profiles that pass the eye-test"
-            body="Highlight reels, season stats, position, travel radius, season-by-season career history. Built for the format scouts actually look at."
-            icon="profile"
-          />
-          <FeatureCard
-            title="Discover that works"
-            body="Filter by level, position, gender, location radius — and rank by who actually plays the role you need. Not endless infinite scroll."
-            icon="search"
-          />
-          <FeatureCard
-            title="DMs that don't get lost"
-            body="Cold messages land in Requests until accepted. Connections show in Inbox. Nothing gets buried."
-            icon="message"
-          />
-          <FeatureCard
-            title="Verification you can trust"
-            body="ID + FA Full-Time roster checks for tiered verified badges. Players can prove the stats are theirs. Coaches can prove the club is theirs."
-            icon="shield"
-          />
-          <FeatureCard
-            title="Built for clubs &amp; coaches"
-            body="Scouts, recruiters, agents and clubs all get role-specific profiles. Post who you are and what you're looking for."
-            icon="club"
-          />
-          <FeatureCard
-            title="Free to join. No paywall."
-            body="First 100 get founding-member status on their profile permanently. Pro features later are opt-in — discovery stays free."
-            icon="badge"
-          />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FeatureCard({
-  title,
-  body,
-  icon,
-}: {
-  title: string;
-  body: string;
-  icon: string;
-}) {
-  return (
-    <div className="group relative overflow-hidden rounded-3xl border border-line/80 bg-card/40 p-7 transition hover:border-lime/30 hover:bg-card/80">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-lime/0 blur-3xl transition group-hover:bg-lime/[0.07]"
-      />
-      <FeatureIcon name={icon} />
-      <h3 className="mt-6 text-xl font-extrabold tracking-tight text-white">
-        {title}
-      </h3>
-      <p
-        className="mt-3 text-[14.5px] leading-relaxed text-white/60"
-        dangerouslySetInnerHTML={{ __html: body }}
-      />
-    </div>
-  );
-}
-
-function FeatureIcon({ name }: { name: string }) {
-  const paths: Record<string, React.ReactNode> = {
-    profile: (
-      <path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2c-3.3 0-9.9 1.6-9.9 4.9V22h19.8v-3.1c0-3.3-6.6-4.9-9.9-4.9z" />
-    ),
-    search: (
-      <path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 5L20.49 19l-4.99-5zm-6 0a4.5 4.5 0 1 1 0-9 4.5 4.5 0 0 1 0 9z" />
-    ),
-    message: (
-      <path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h11c.55 0 1-.45 1-1z" />
-    ),
-    shield: (
-      <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z" />
-    ),
-    club: (
-      <path d="M12 6c1.66 0 3-1.34 3-3S13.66 0 12 0 9 1.34 9 3s1.34 3 3 3zM5.5 8h13c.83 0 1.5.67 1.5 1.5v6c0 .83-.67 1.5-1.5 1.5H17v6h-2v-6h-2v6h-2v-6H9v6H7v-6H5.5C4.67 17 4 16.33 4 15.5v-6C4 8.67 4.67 8 5.5 8z" />
-    ),
-    badge: (
-      <path d="M12 2l2.39 4.84L20 7.27l-4 3.9.94 5.51L12 14.77 7.06 16.68 8 11.17l-4-3.9 5.61-.43L12 2z" />
-    ),
-  };
-  return (
-    <div className="grid h-12 w-12 place-items-center rounded-2xl border border-lime/20 bg-lime/10 text-lime">
-      <svg viewBox="0 0 24 24" className="h-5 w-5 fill-current" aria-hidden>
-        {paths[name]}
+        <line x1="0" y1="450" x2="1600" y2="450" stroke="white" strokeWidth="2" />
+        <circle cx="800" cy="450" r="260" stroke="white" strokeWidth="2" />
+        <circle cx="800" cy="450" r="6" fill="white" />
       </svg>
+
+      <div className="mx-auto grid max-w-7xl items-center gap-16 px-6 pb-20 pt-16 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10 lg:px-10 lg:pb-28 lg:pt-24">
+        <div>
+          <div className="rise" style={{ "--d": "0s" } as React.CSSProperties}>
+            <RatingChip />
+          </div>
+
+          <h1
+            className="rise mt-8 font-display text-[clamp(58px,9vw,118px)] uppercase leading-[0.88] tracking-tight"
+            style={{ "--d": "0.08s" } as React.CSSProperties}
+          >
+            Get seen.
+            <br />
+            <span className="text-lime">Get signed.</span>
+          </h1>
+
+          <p
+            className="rise mt-7 max-w-[34rem] text-pretty text-lg leading-relaxed text-white/65 md:text-xl"
+            style={{ "--d": "0.18s" } as React.CSSProperties}
+          >
+            The UK football marketplace where free agents, coaches, clubs and
+            scouts find each other — real profiles, real trials, real
+            conversations that turn into contracts.
+          </p>
+
+          <div
+            className="rise mt-9"
+            id="get"
+            style={{ "--d": "0.28s" } as React.CSSProperties}
+          >
+            <StoreBadges />
+          </div>
+
+          <p
+            className="rise mt-7 text-[13px] font-semibold uppercase tracking-[0.16em] text-white/40"
+            style={{ "--d": "0.36s" } as React.CSSProperties}
+          >
+            Free to join · No agents, no middlemen · UK-wide
+          </p>
+        </div>
+
+        <div
+          className="rise relative mx-auto"
+          style={{ "--d": "0.2s" } as React.CSSProperties}
+        >
+          <PhoneMock />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** The real app, running — a screen recording of the live walkthrough
+ *  (Discover feed → Trials → Inbox → Profile) inside a titanium phone. */
+function PhoneMock() {
+  return (
+    <div className="float-slow relative">
+      <div
+        aria-hidden
+        className="absolute -inset-12 -z-10 rounded-full bg-lime/10 blur-3xl"
+      />
+
+      {/* Titanium body */}
+      <div
+        className="relative w-[290px] rounded-[52px] p-[10px] shadow-[0_50px_90px_-30px_rgba(0,0,0,0.85)] sm:w-[316px]"
+        style={{
+          background:
+            "linear-gradient(140deg, #3a3a40 0%, #19191c 30%, #202024 62%, #46464c 100%)",
+          boxShadow:
+            "0 50px 90px -30px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 0 0 1px rgba(255,255,255,0.04)",
+        }}
+      >
+        {/* Side hardware — action, volume up/down (left), power (right) */}
+        <span
+          aria-hidden
+          className="absolute -left-[2.5px] top-[104px] h-[22px] w-[3px] rounded-l-md"
+          style={{ background: "linear-gradient(90deg, #4a4a52, #222226)" }}
+        />
+        <span
+          aria-hidden
+          className="absolute -left-[2.5px] top-[152px] h-[44px] w-[3px] rounded-l-md"
+          style={{ background: "linear-gradient(90deg, #4a4a52, #222226)" }}
+        />
+        <span
+          aria-hidden
+          className="absolute -left-[2.5px] top-[206px] h-[44px] w-[3px] rounded-l-md"
+          style={{ background: "linear-gradient(90deg, #4a4a52, #222226)" }}
+        />
+        <span
+          aria-hidden
+          className="absolute -right-[2.5px] top-[170px] h-[64px] w-[3px] rounded-r-md"
+          style={{ background: "linear-gradient(270deg, #4a4a52, #222226)" }}
+        />
+
+        {/* Screen — the app, actually running */}
+        <div className="relative aspect-[540/1170] overflow-hidden rounded-[42px] bg-black ring-1 ring-black">
+          <video
+            src="/screen-loop.mp4"
+            poster="/screen-poster.jpg"
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+          {/* glass glare */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(125deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0) 30%, rgba(255,255,255,0) 70%, rgba(255,255,255,0.04) 100%)",
+              mixBlendMode: "screen",
+            }}
+          />
+        </div>
+      </div>
     </div>
   );
 }
 
-// ─── How it works ─────────────────────────────────────────────────────
+// ─── Live trials ticker ───────────────────────────────────────────────
 
-function HowItWorks() {
-  const steps = [
-    {
-      n: "01",
-      title: "Sign up. Pick your role.",
-      body: "Player, coach, recruiter, club, fan, or services. Each role gets a profile shape that fits how scouting actually works.",
-    },
-    {
-      n: "02",
-      title: "Build the profile in 5 minutes.",
-      body: "Position, level, stats, highlights, photos, travel radius. We pre-fill what we can; you fine-tune.",
-    },
-    {
-      n: "03",
-      title: "Get found. Get in the room.",
-      body: "Coaches and recruiters filter exactly to what they need. When they message, you're in the conversation that matters.",
-    },
-  ];
+function TrialsTicker() {
+  const items = [...TICKER_TRIALS, ...TICKER_TRIALS]; // seamless loop
   return (
-    <section id="how" className="border-b border-line/60 bg-white/[0.015]">
-      <div className="mx-auto max-w-7xl px-6 py-28 lg:px-10">
-        <SectionHeader
-          eyebrow="How it works"
-          title="From signup to first message in under a week."
-          subtitle="Every grassroots player has been told to “put your stats on Twitter” — we built the thing that actually does it."
-        />
-        <div className="mt-16 grid gap-5 md:grid-cols-3">
-          {steps.map((s) => (
-            <div
-              key={s.n}
-              className="relative rounded-3xl border border-line/80 bg-card/40 p-8"
-            >
-              <div className="font-mono text-sm font-bold tracking-widest text-lime">
-                {s.n}
-              </div>
-              <h3 className="mt-4 text-xl font-extrabold tracking-tight">
-                {s.title}
-              </h3>
-              <p className="mt-3 text-[14.5px] leading-relaxed text-white/60">
-                {s.body}
+    <section
+      aria-label="Trials live on the app right now"
+      className="border-y border-line bg-[#0c0e11]"
+    >
+      <div className="flex items-stretch">
+        <div className="z-10 flex shrink-0 items-center gap-2 border-r border-line bg-[#0c0e11] px-5 py-3.5">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-lime opacity-60" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-lime" />
+          </span>
+          <span className="whitespace-nowrap text-[11px] font-extrabold uppercase tracking-[0.18em] text-lime">
+            Live on the app
+          </span>
+        </div>
+        <div className="relative flex-1 overflow-hidden">
+          <div className="ticker-track items-center py-3.5">
+            {items.map((t, i) => (
+              <span
+                key={i}
+                className="flex items-center whitespace-nowrap text-[13px] font-semibold text-white/70"
+              >
+                <span className="px-6">{t}</span>
+                <span className="h-1 w-1 rounded-full bg-lime/70" />
+              </span>
+            ))}
+          </div>
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#0c0e11] to-transparent"
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Proof ────────────────────────────────────────────────────────────
+
+function Proof() {
+  return (
+    <section id="proof" className="relative overflow-hidden">
+      <div className="mx-auto max-w-7xl px-6 py-24 lg:px-10 lg:py-32">
+        <Reveal>
+          <p className="text-[12px] font-extrabold uppercase tracking-[0.24em] text-lime">
+            One month since launch
+          </p>
+          <h2 className="mt-4 max-w-3xl font-display text-[clamp(40px,5.5vw,72px)] uppercase leading-[0.92]">
+            The receipts, straight from the database
+          </h2>
+        </Reveal>
+
+        <div className="mt-16 grid gap-y-14 lg:grid-cols-[1.2fr_1fr] lg:gap-x-20">
+          {/* Lead number — oversized, asymmetric */}
+          <Reveal>
+            <div>
+              <Count
+                to={PROOF.chatsThatLed}
+                className="font-display text-[clamp(110px,17vw,240px)] leading-[0.85] text-lime"
+              />
+              <p className="mt-4 max-w-md text-pretty text-lg font-semibold leading-snug text-white/85">
+                conversations that led to a real opportunity — a trial invite,
+                a number exchanged, a signing.
+              </p>
+              <p className="mt-3 text-[12px] font-medium uppercase tracking-[0.16em] text-white/35">
+                39% of every conversation on the platform
               </p>
             </div>
-          ))}
+          </Reveal>
+
+          {/* Supporting numbers — stacked ledger rows, not a card grid */}
+          <div className="flex flex-col justify-center divide-y divide-white/[0.07]">
+            <LedgerRow to={PROOF.members} label="players, coaches, clubs & scouts" delay={60} />
+            <LedgerRow to={PROOF.connections} label="connections made" delay={120} />
+            <LedgerRow to={PROOF.numbersSwapped} label="phone numbers exchanged" delay={180} />
+            <LedgerRow
+              to={PROOF.applications}
+              label={`applications to ${PROOF.trials} trials`}
+              delay={240}
+            />
+          </div>
         </div>
+
+        <Reveal delay={150}>
+          <p className="mt-16 text-[12px] font-medium text-white/30">
+            Counted from the live production database, 11 June 2026. No
+            projections, no &quot;up to&quot; — just what happened.
+          </p>
+        </Reveal>
       </div>
     </section>
   );
 }
 
-function SectionHeader({
-  eyebrow,
-  title,
-  subtitle,
+function LedgerRow({
+  to,
+  label,
+  delay,
 }: {
-  eyebrow: string;
-  title: string;
-  subtitle: string;
+  to: number;
+  label: string;
+  delay: number;
 }) {
   return (
-    <div className="mx-auto max-w-3xl text-center">
-      <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-lime">
-        {eyebrow}
-      </span>
-      <h2 className="mt-4 text-balance text-4xl font-black tracking-[-0.03em] md:text-5xl">
-        {title}
-      </h2>
-      <p className="mx-auto mt-5 max-w-2xl text-balance text-lg leading-relaxed text-white/60">
-        {subtitle}
-      </p>
-    </div>
+    <Reveal delay={delay}>
+      <div className="flex items-baseline justify-between gap-6 py-5">
+        <Count
+          to={to}
+          className="font-display text-[clamp(38px,4.5vw,56px)] leading-none text-white"
+        />
+        <span className="text-right text-[13px] font-semibold uppercase tracking-[0.14em] text-white/45">
+          {label}
+        </span>
+      </div>
+    </Reveal>
   );
 }
 
-// ─── Download ─────────────────────────────────────────────────────────
+// ─── Two sides ────────────────────────────────────────────────────────
 
-function Download() {
+function TwoSides() {
   return (
-    <section id="download" className="relative overflow-hidden border-b border-line/60">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(ellipse 60% 50% at 50% 0%, rgba(198,248,6,0.10) 0%, transparent 70%)",
-        }}
-      />
-      <div className="mx-auto max-w-7xl px-6 py-28 lg:px-10">
-        <SectionHeader
-          eyebrow="Install"
-          title="Get the app."
-          subtitle="iPhone users grab it from the App Store. Android users sideload directly while we finish the Play Store listing."
-        />
+    <section id="sides" className="border-t border-line bg-[#0c0e11]">
+      <div className="mx-auto max-w-7xl px-6 py-24 lg:px-10 lg:py-32">
+        <Reveal>
+          <h2 className="font-display text-[clamp(40px,5.5vw,72px)] uppercase leading-[0.92]">
+            Two sides. <span className="text-lime">One pitch.</span>
+          </h2>
+        </Reveal>
 
-        <div className="mt-16 grid gap-5 lg:grid-cols-2">
-          {/* iOS */}
-          <a
-            href={APP_STORE_URL}
-            target="_blank"
-            rel="noopener"
-            className="group relative overflow-hidden rounded-3xl border border-line/80 bg-card/40 p-9 transition hover:border-white/30 hover:bg-card/70"
-          >
-            <div className="flex items-center justify-between">
-              <div className="grid h-14 w-14 place-items-center rounded-2xl bg-white/5 text-white">
-                <svg
-                  viewBox="0 0 24 24"
-                  className="h-7 w-7 fill-current"
-                  aria-hidden
-                >
-                  <path d="M16.365 1.43c0 1.14-.493 2.27-1.177 3.08-.823.99-2.18 1.76-3.282 1.67-.144-1.04.444-2.18 1.105-2.93.792-.91 2.16-1.63 3.354-1.82zm4.43 16.36c-.65 1.42-.97 2.05-1.81 3.31-1.18 1.76-2.85 3.96-4.91 3.98-1.83.02-2.3-1.19-4.78-1.18-2.48.01-2.99 1.2-4.82 1.19-2.06-.02-3.64-2.01-4.82-3.77C-.27 17.21-.18 13.4 1.55 11.6c1.22-1.27 2.81-2.01 4.42-2.04 2.07-.03 4.02 1.39 5.27 1.39 1.25 0 3.55-1.71 5.99-1.46.98.04 3.71.4 5.46 2.99-.14.09-3.28 1.91-3.24 5.71.04 4.55 4.0 6.07 4.04 6.09-.03.1-.64 2.21-2.13 4.39z" />
-                </svg>
+        <div className="mt-16 grid gap-16 lg:grid-cols-2 lg:gap-12">
+          {/* Players */}
+          <Reveal>
+            <div>
+              <p className="text-[12px] font-extrabold uppercase tracking-[0.24em] text-lime">
+                For players
+              </p>
+              <ol className="mt-7 space-y-6">
+                <Step n="01" title="Build a profile that does the talking">
+                  Photos, highlights, real season stats. Verified through FA
+                  Full-Time so recruiters trust what they see.
+                </Step>
+                <Step n="02" title="Get discovered or go hunting">
+                  Recruiters scroll the Discover feed; you apply to live
+                  trials near you in one tap.
+                </Step>
+                <Step n="03" title="Talk directly. No middlemen.">
+                  DMs with the coach who actually picks the team — read
+                  receipts and all.
+                </Step>
+              </ol>
+              {/* real chat artifact */}
+              <div className="mt-9 max-w-sm rounded-2xl border border-white/10 bg-card p-4">
+                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-white/40">
+                  A real opening line on the app
+                </p>
+                <div className="mt-3 rounded-xl rounded-tl-[4px] bg-white/[0.06] px-3.5 py-2.5 text-[13.5px] leading-snug text-white/90">
+                  Saw your highlights — keen to chat next week. Free Sat 2pm?
+                </div>
+                <div className="mt-2 flex justify-end">
+                  <div className="rounded-xl rounded-br-[4px] bg-lime px-3.5 py-2.5 text-[13.5px] font-semibold leading-snug text-black">
+                    Yeah, sounds good. See you Sat 2pm.
+                  </div>
+                </div>
+                <p className="mt-1.5 text-right text-[10px] font-bold text-[#34b7f1]">
+                  ✓✓ Seen
+                </p>
               </div>
-              <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-white/55">
-                Live
-              </span>
             </div>
-            <h3 className="mt-7 text-3xl font-black tracking-[-0.02em]">
-              iPhone
-            </h3>
-            <p className="mt-3 max-w-md text-[14.5px] leading-relaxed text-white/60">
-              Open the App Store and tap install. Auto-updates handled by
-              Apple — no extra setup.
-            </p>
-            <div className="mt-8 inline-flex items-center gap-2 text-sm font-extrabold tracking-tight text-white transition group-hover:text-lime">
-              Open App Store
-              <span className="transition-transform group-hover:translate-x-1">
-                →
-              </span>
-            </div>
-          </a>
+          </Reveal>
 
-          {/* Android — the urgent v1 path */}
-          <a
-            href={APK_URL}
-            className="group relative overflow-hidden rounded-3xl border border-lime/40 bg-lime/[0.06] p-9 transition hover:border-lime"
-          >
-            <div
-              aria-hidden
-              className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-lime/20 blur-3xl"
-            />
-            <div className="relative flex items-center justify-between">
-              <div className="grid h-14 w-14 place-items-center rounded-2xl bg-lime/20 text-lime">
-                <svg
-                  viewBox="0 0 24 24"
-                  className="h-7 w-7 fill-current"
-                  aria-hidden
-                >
-                  <path d="M17.523 15.341a1.001 1.001 0 110-2.002 1.001 1.001 0 010 2.002m-11.046 0a1.001 1.001 0 110-2.002 1.001 1.001 0 010 2.002m11.405-6.18l1.998-3.46a.415.415 0 00-.152-.567.415.415 0 00-.568.152l-2.022 3.505A12.46 12.46 0 0012 7.875c-1.86 0-3.63.42-5.21 1.158L4.77 5.527a.415.415 0 00-.568-.152.415.415 0 00-.152.567l1.998 3.46C2.65 11.083.5 14.337.5 18.005h23c0-3.668-2.15-6.92-5.618-8.844" />
-                </svg>
+          {/* Clubs & coaches */}
+          <Reveal delay={120}>
+            <div>
+              <p className="text-[12px] font-extrabold uppercase tracking-[0.24em] text-lime">
+                For clubs, coaches & scouts
+              </p>
+              <ol className="mt-7 space-y-6">
+                <Step n="01" title="Post a trial in two minutes">
+                  Date, ground, positions wanted. It lands in front of every
+                  matching player in range — push notification included.
+                </Step>
+                <Step n="02" title="Applications, not chaos">
+                  A proper applicant list with positions, stats and
+                  highlights. Shortlist, message, decide.
+                </Step>
+                <Step n="03" title="Fill the squad — or the dugout">
+                  Players, coaches, managers, physios and analysts are all on
+                  here. Whole clubs get staffed through the app.
+                </Step>
+              </ol>
+              {/* real trial card artifact */}
+              <div className="mt-9 max-w-sm rounded-2xl bg-card p-4">
+                <div className="flex items-center justify-between">
+                  <span className="rounded-full bg-[#1c3a22] px-2.5 py-1 text-[10px] font-extrabold tracking-wide text-[#4caf50]">
+                    TRIAL
+                  </span>
+                  <span className="text-[11px] font-bold text-white/55">
+                    In 4d
+                  </span>
+                </div>
+                <p className="mt-3 text-[15px] font-extrabold leading-tight">
+                  Sporting Bengal United — Step 5 Trials
+                </p>
+                <p className="mt-1 text-[12.5px] text-white/55">
+                  Tue 16 Jun · 7pm · Stepney Green
+                </p>
+                <p className="mt-2.5 flex items-center gap-1.5 text-[12px] font-extrabold text-[#ffb020]">
+                  🔥 15 already applied
+                </p>
+                <span className="mt-3 flex h-10 items-center justify-center rounded-full border border-[#4caf50] bg-[#4caf50]/15 text-[13px] font-extrabold text-[#4caf50]">
+                  ✓ Applied
+                </span>
               </div>
-              <span className="rounded-full bg-lime px-3 py-1 text-[10px] font-extrabold uppercase tracking-widest text-black">
-                Early access
-              </span>
             </div>
-            <h3 className="relative mt-7 text-3xl font-black tracking-[-0.02em]">
-              Android
-            </h3>
-            <p className="relative mt-3 max-w-md text-[14.5px] leading-relaxed text-white/65">
-              Direct APK download while we finish the Play Store listing.
-              In-app update prompts when a new version ships — install once,
-              we'll handle the rest.
-            </p>
-            <div className="relative mt-8 inline-flex items-center gap-2 text-sm font-extrabold tracking-tight text-lime">
-              Download APK
-              <span className="transition-transform group-hover:translate-x-1">
-                ↓
-              </span>
-            </div>
-          </a>
-        </div>
-
-        {/* Sideload guide */}
-        <div className="mt-10 rounded-3xl border border-line/80 bg-card/40 p-8 lg:p-10">
-          <div className="flex flex-wrap items-baseline justify-between gap-4">
-            <h3 className="text-2xl font-black tracking-[-0.02em]">
-              Installing on Android in 4 steps
-            </h3>
-            <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/40">
-              Sideload guide
-            </span>
-          </div>
-          <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <Step n="1" title="Download">
-              Tap{" "}
-              <span className="font-bold text-lime">Download APK</span>{" "}
-              above. Save the file to your phone.
-            </Step>
-            <Step n="2" title="Open">
-              Open your <span className="font-bold">Downloads</span> folder
-              and tap the FreeAgentsFC APK.
-            </Step>
-            <Step n="3" title="Allow">
-              Your phone asks to allow installs from this source — tap{" "}
-              <span className="font-bold text-lime">Settings → Allow</span>
-              , then return.
-            </Step>
-            <Step n="4" title="Install">
-              Tap <span className="font-bold">Install</span>. Open the app
-              and sign up — first 100 are founding members.
-            </Step>
-          </div>
-          <p className="mt-8 text-xs text-white/35">
-            The APK is signed and safe. The “unknown developer” warning is
-            only because we&apos;re bypassing the Play Store while the
-            listing is in review.
-          </p>
+          </Reveal>
         </div>
       </div>
     </section>
@@ -723,149 +635,112 @@ function Step({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative rounded-2xl border border-line/60 bg-ink/40 p-6">
-      <div className="font-mono text-xs font-bold tracking-widest text-lime">
-        STEP {n}
-      </div>
-      <div className="mt-2 text-base font-extrabold tracking-tight text-white">
-        {title}
-      </div>
-      <div className="mt-3 text-[13.5px] leading-relaxed text-white/65">
-        {children}
-      </div>
-    </div>
+    <li className="grid grid-cols-[auto_1fr] gap-4">
+      <span className="font-display text-[22px] leading-[1.4] text-white/25">
+        {n}
+      </span>
+      <span>
+        <span className="block text-[16px] font-extrabold tracking-tight text-white">
+          {title}
+        </span>
+        <span className="mt-1 block max-w-[26rem] text-[14px] leading-relaxed text-white/55">
+          {children}
+        </span>
+      </span>
+    </li>
   );
 }
 
 // ─── Testimonials ─────────────────────────────────────────────────────
 
 function Testimonials() {
-  const items = [
-    {
-      quote:
-        "Built my profile in 5 minutes. Got my first message from a Step 3 manager the same week.",
-      name: "Ade",
-      role: "Striker · Step 5",
-      initials: "AD",
-    },
-    {
-      quote:
-        "Finally somewhere that isn't just Twitter DMs. The travel-radius filter alone is worth it.",
-      name: "Marcus",
-      role: "CB · Step 3",
-      initials: "MO",
-    },
-    {
-      quote:
-        "We use it to scout for our reserve squad. Way faster than scrolling through a Telegram group.",
-      name: "Jordan",
-      role: "Coach · Step 4",
-      initials: "JT",
-    },
-  ];
+  const lead = QUOTES[0];
+  const rest = QUOTES.slice(1);
   return (
-    <section className="border-b border-line/60">
-      <div className="mx-auto max-w-7xl px-6 py-28 lg:px-10">
-        <SectionHeader
-          eyebrow="From the pitch"
-          title="Players are getting found."
-          subtitle="Honest words from the players, coaches and clubs using FreeAgentsFC right now."
-        />
-        <div className="mt-16 grid gap-5 md:grid-cols-3">
-          {items.map((t) => (
-            <figure
-              key={t.name}
-              className="relative flex flex-col rounded-3xl border border-line/80 bg-card/40 p-8 transition hover:border-white/20 hover:bg-card/70"
+    <section id="saying" className="relative overflow-hidden">
+      <div className="mx-auto max-w-7xl px-6 py-24 lg:px-10 lg:py-32">
+        <Reveal>
+          <p className="text-[12px] font-extrabold uppercase tracking-[0.24em] text-lime">
+            What people are saying
+          </p>
+          <p className="mt-2 text-[12px] font-semibold uppercase tracking-[0.2em] text-white/40">
+            Real people · Real results · Quoted verbatim
+          </p>
+        </Reveal>
+
+        <Reveal delay={80}>
+          <figure className="mt-12 max-w-4xl">
+            <span
+              aria-hidden
+              className="block font-display text-[88px] leading-[0.4] text-lime"
             >
-              <svg
-                viewBox="0 0 24 24"
-                className="h-7 w-7 fill-lime/40"
-                aria-hidden
-              >
-                <path d="M9.13 7.34c-.46.85-.84 1.84-1.13 2.96-.29 1.12-.43 2.33-.43 3.62v3.74h4.83V13H10c0-1.07.2-2.04.6-2.92.4-.87.95-1.57 1.66-2.09.71-.52 1.45-.86 2.22-1.04l.43-3.06c-.7.1-1.43.32-2.18.66-.74.34-1.45.83-2.14 1.47-.69.64-1.16 1.35-1.46 2.32zm9 0c-.46.85-.84 1.84-1.13 2.96-.29 1.12-.43 2.33-.43 3.62v3.74h4.83V13H19c0-1.07.2-2.04.6-2.92.4-.87.95-1.57 1.66-2.09.71-.52 1.45-.86 2.22-1.04l.43-3.06c-.7.1-1.43.32-2.18.66-.74.34-1.45.83-2.14 1.47-.69.64-1.16 1.35-1.46 2.32z" />
-              </svg>
-              <blockquote className="mt-6 flex-1 text-balance text-lg leading-relaxed text-white/85">
-                {t.quote}
-              </blockquote>
-              <figcaption className="mt-8 flex items-center gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-white/15 to-white/5 text-xs font-black text-white">
-                  {t.initials}
-                </div>
-                <div>
-                  <div className="text-sm font-extrabold text-white">
-                    {t.name}
-                  </div>
-                  <div className="text-xs text-white/50">{t.role}</div>
-                </div>
-              </figcaption>
-            </figure>
+              &ldquo;
+            </span>
+            <blockquote className="mt-6 text-balance text-[clamp(26px,3.6vw,44px)] font-bold leading-[1.18] tracking-tight text-white">
+              {lead.text}
+            </blockquote>
+            <figcaption className="mt-6 flex items-center gap-3 text-[13px] font-semibold">
+              <span className="grid h-9 w-9 place-items-center rounded-full bg-lime font-extrabold text-black">
+                {lead.who[0]}
+              </span>
+              <span className="text-white">{lead.who}</span>
+              <span className="uppercase tracking-[0.14em] text-lime">
+                {lead.role}
+              </span>
+            </figcaption>
+          </figure>
+        </Reveal>
+
+        <div className="mt-16 grid gap-10 border-t border-white/[0.07] pt-12 md:grid-cols-3">
+          {rest.map((q, i) => (
+            <Reveal key={q.text} delay={i * 100}>
+              <figure>
+                <blockquote className="text-[17px] font-semibold leading-snug text-white/85">
+                  &ldquo;{q.text}&rdquo;
+                </blockquote>
+                <figcaption className="mt-4 text-[12px] font-bold uppercase tracking-[0.14em] text-white/40">
+                  {q.who} · <span className="text-lime/80">{q.role}</span>
+                </figcaption>
+              </figure>
+            </Reveal>
           ))}
         </div>
-        <p className="mt-10 text-center text-xs text-white/30">
-          Quotes shown for launch — real testimonials added as they come in.
-        </p>
       </div>
     </section>
   );
 }
 
-// ─── Feedback ─────────────────────────────────────────────────────────
+// ─── Closer ───────────────────────────────────────────────────────────
 
-function FeedbackGuide() {
+function YourMove() {
   return (
-    <section className="border-b border-line/60">
-      <div className="mx-auto max-w-4xl px-6 py-28 lg:px-10">
-        <div className="relative overflow-hidden rounded-[2rem] border border-line/80 bg-gradient-to-br from-card/80 via-card/40 to-card/80 p-10 lg:p-14">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-lime/10 blur-3xl"
-          />
-          <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-lime">
-            Found a bug?
-          </span>
-          <h2 className="mt-4 text-balance text-3xl font-black tracking-[-0.03em] md:text-4xl">
-            Tell us. We read every message.
+    <section className="relative overflow-hidden border-t border-line">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          background:
+            "radial-gradient(ellipse 60% 70% at 50% 110%, rgba(198,248,6,0.13) 0%, transparent 60%)",
+        }}
+      />
+      <div className="mx-auto flex max-w-7xl flex-col items-center px-6 py-28 text-center lg:py-40">
+        <Reveal>
+          <h2 className="font-display text-[clamp(72px,14vw,200px)] uppercase leading-[0.85]">
+            Your <span className="text-lime">move.</span>
           </h2>
-          <p className="mt-5 max-w-2xl text-balance text-lg leading-relaxed text-white/60">
-            The fastest way to flag a bug, request a feature, or ask for
-            help is straight from the app.
+        </Reveal>
+        <Reveal delay={120}>
+          <p className="mt-8 max-w-xl text-pretty text-lg leading-relaxed text-white/60">
+            742 conversations turned into real opportunities in month one. The
+            trials are live. The scouts are scrolling.
           </p>
-          <div className="mt-8 inline-block rounded-2xl border border-line/80 bg-ink/60 p-6 text-left text-sm">
-            <ol className="space-y-2.5">
-              <li className="flex gap-3">
-                <span className="text-lime">01</span> Open FreeAgentsFC
-              </li>
-              <li className="flex gap-3">
-                <span className="text-lime">02</span>
-                <span>
-                  Go to{" "}
-                  <span className="font-bold text-white">
-                    Profile → Settings
-                  </span>
-                </span>
-              </li>
-              <li className="flex gap-3">
-                <span className="text-lime">03</span>
-                <span>
-                  Tap{" "}
-                  <span className="font-bold text-white">Send feedback</span>
-                </span>
-              </li>
-            </ol>
+        </Reveal>
+        <Reveal delay={220}>
+          <div className="mt-10 flex flex-col items-center gap-6">
+            <StoreBadges className="justify-center" />
+            <RatingChip />
           </div>
-          <p className="mt-6 text-xs text-white/40">
-            Or DM us on{" "}
-            <Link
-              href={TWITTER_URL}
-              target="_blank"
-              rel="noopener"
-              className="font-bold text-lime hover:underline"
-            >
-              @FreeAgentsFC1
-            </Link>
-            .
-          </p>
-        </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -875,43 +750,43 @@ function FeedbackGuide() {
 
 function Footer() {
   return (
-    <footer className="bg-ink">
-      <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 px-6 py-14 lg:flex-row lg:items-center lg:px-10">
-        <div className="flex items-center gap-3">
-          <Logo />
-          <div>
-            <div className="text-sm font-extrabold tracking-tight text-white">
-              FreeAgentsFC
-            </div>
-            <div className="text-[11px] text-white/40">
-              © {new Date().getFullYear()} Keplo Ltd. All rights reserved.
-            </div>
-          </div>
+    <footer className="border-t border-line">
+      <div className="mx-auto flex max-w-7xl flex-col gap-8 px-6 py-12 md:flex-row md:items-center md:justify-between lg:px-10">
+        <div className="flex items-center gap-2.5">
+          <Image
+            src="/logo.png"
+            alt=""
+            width={28}
+            height={28}
+            className="rounded-lg"
+          />
+          <span className="text-[14px] font-extrabold tracking-tight">
+            FreeAgentsFC
+          </span>
+          <span className="ml-2 text-[12px] text-white/35">
+            Opportunity · Performance · Future
+          </span>
         </div>
-        <div className="flex flex-wrap items-center gap-7 text-sm font-semibold text-white/55">
-          <Link
-            href={TWITTER_URL}
-            target="_blank"
-            rel="noopener"
-            className="hover:text-white"
-          >
-            Twitter / X
+        <div className="flex flex-wrap items-center gap-6 text-[13px] font-semibold text-white/50">
+          <Link href={TWITTER_URL} target="_blank" rel="noopener" className="transition hover:text-white">
+            X / Twitter
           </Link>
-          <Link
-            href={APP_STORE_URL}
-            target="_blank"
-            rel="noopener"
-            className="hover:text-white"
-          >
-            App Store
+          <Link href="/support.html" className="transition hover:text-white">
+            Support
           </Link>
-          <Link href="#download" className="hover:text-white">
-            Android APK
+          <Link href="/privacy.html" className="transition hover:text-white">
+            Privacy
           </Link>
-          <a href="mailto:keploltd@gmail.com" className="hover:text-white">
-            keploltd@gmail.com
-          </a>
+          <Link href="/terms.html" className="transition hover:text-white">
+            Terms
+          </Link>
+          <Link href="/delete-account" className="transition hover:text-white">
+            Delete account
+          </Link>
         </div>
+      </div>
+      <div className="border-t border-line py-5 text-center text-[12px] text-white/30">
+        © 2026 FreeAgentsFC Ltd · Made for UK football
       </div>
     </footer>
   );

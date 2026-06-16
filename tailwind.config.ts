@@ -14,6 +14,10 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
+        // BrickRecords = the app's own brand display face (shipped
+        // in-app). Anton is the closest webfont stand-in if it ever
+        // fails to load.
+        display: ["BrickRecords", "Anton", "Impact", "sans-serif"],
       },
     },
   },

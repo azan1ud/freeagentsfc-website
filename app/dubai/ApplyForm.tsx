@@ -21,6 +21,11 @@ type Form = {
   status: string;
   hasHighlights: string;
   highlights: string;
+  passport: string;
+  passportCountry: string;
+  transfermarkt: string;
+  transfermarktLink: string;
+  payFee: string;
   website: string; // honeypot, stays empty for humans
 };
 
@@ -35,6 +40,11 @@ const EMPTY: Form = {
   status: "",
   hasHighlights: "",
   highlights: "",
+  passport: "",
+  passportCountry: "",
+  transfermarkt: "",
+  transfermarktLink: "",
+  payFee: "",
   website: "",
 };
 
@@ -74,6 +84,11 @@ export default function ApplyForm() {
     if (!f.status) m.push("status");
     if (!f.hasHighlights) m.push("hasHighlights");
     if (f.hasHighlights === "Yes" && !f.highlights.trim()) m.push("highlights");
+    if (!f.passport) m.push("passport");
+    if (f.passport === "Yes" && !f.passportCountry.trim()) m.push("passportCountry");
+    if (!f.transfermarkt) m.push("transfermarkt");
+    if (f.transfermarkt === "Yes" && !f.transfermarktLink.trim()) m.push("transfermarktLink");
+    if (!f.payFee) m.push("payFee");
     return m;
   }
 
@@ -93,9 +108,20 @@ export default function ApplyForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...f,
+          name: f.name,
+          whatsapp: f.whatsapp,
+          handle: f.handle,
+          region: f.region,
+          age: f.age,
           positions: f.positions.join(", "),
+          level: f.level,
+          status: f.status,
           highlights: f.hasHighlights === "Yes" ? f.highlights : "",
+          passport: f.passport,
+          passportCountry: f.passport === "Yes" ? f.passportCountry : "",
+          transfermarkt: f.transfermarkt === "Yes" ? f.transfermarktLink : "No",
+          payFee: f.payFee,
+          website: f.website,
           ref,
         }),
       });
@@ -176,6 +202,32 @@ export default function ApplyForm() {
             className="max-w-[7rem]"
           />
         </Field>
+        <Field
+          id="passport"
+          label="Do you have a valid passport?"
+          bad={bad("passport")}
+        >
+          <Chips
+            options={["Yes", "No"]}
+            value={f.passport}
+            onChange={(v) => set("passport", v)}
+          />
+        </Field>
+        {f.passport === "Yes" && (
+          <Field
+            id="passportCountry"
+            label="Which country is it from?"
+            bad={bad("passportCountry")}
+          >
+            <Input
+              id="f-passportCountry"
+              value={f.passportCountry}
+              onChange={(v) => set("passportCountry", v)}
+              placeholder="e.g. United Kingdom"
+              autoComplete="country-name"
+            />
+          </Field>
+        )}
       </Group>
 
       <Group title="Your football">
@@ -238,6 +290,48 @@ export default function ApplyForm() {
             />
           </Field>
         )}
+        <Field
+          id="transfermarkt"
+          label="Do you have a Transfermarkt profile?"
+          bad={bad("transfermarkt")}
+        >
+          <Chips
+            options={["Yes", "No"]}
+            value={f.transfermarkt}
+            onChange={(v) => set("transfermarkt", v)}
+          />
+        </Field>
+        {f.transfermarkt === "Yes" && (
+          <Field
+            id="transfermarktLink"
+            label="Paste your Transfermarkt link"
+            bad={bad("transfermarktLink")}
+          >
+            <Input
+              id="f-transfermarktLink"
+              value={f.transfermarktLink}
+              onChange={(v) => set("transfermarktLink", v)}
+              type="url"
+              inputMode="url"
+              placeholder="https://www.transfermarkt.co.uk/..."
+              autoCapitalize="none"
+            />
+          </Field>
+        )}
+      </Group>
+
+      <Group title="The showcase">
+        <Field
+          id="payFee"
+          label="This is a private showcase event, which comes at a fee. Would you be willing to pay?"
+          bad={bad("payFee")}
+        >
+          <Chips
+            options={["Yes", "No", "Maybe"]}
+            value={f.payFee}
+            onChange={(v) => set("payFee", v)}
+          />
+        </Field>
       </Group>
 
       {/* Honeypot: hidden from people, bots fill it. */}

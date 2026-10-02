@@ -18,10 +18,8 @@ const FIELDS = [
   "level",
   "status",
   "highlights",
-  "priceShown",
-  "wouldBook",
-  "deposit",
-  "dates",
+  // The form no longer asks for notes, but the Firestore rule requires a
+  // string `notes` field, so it is always sent (empty).
   "notes",
   "ref",
 ] as const;

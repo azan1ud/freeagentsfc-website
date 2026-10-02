@@ -10,13 +10,6 @@ const STATUSES = [
   "Under contract but open to a move",
 ];
 
-// Price shown in the currency the player thinks in.
-function priceFor(region: string) {
-  if (region === "UAE" || region === "Other Middle East") return "AED 12,500";
-  if (region === "UK" || region === "Europe") return "£3,000";
-  return "£3,000 / AED 12,500";
-}
-
 type Form = {
   name: string;
   whatsapp: string;
@@ -28,10 +21,6 @@ type Form = {
   status: string;
   hasHighlights: string;
   highlights: string;
-  wouldBook: string;
-  deposit: string;
-  dates: string;
-  notes: string;
   website: string; // honeypot, stays empty for humans
 };
 
@@ -46,10 +35,6 @@ const EMPTY: Form = {
   status: "",
   hasHighlights: "",
   highlights: "",
-  wouldBook: "",
-  deposit: "",
-  dates: "",
-  notes: "",
   website: "",
 };
 
@@ -89,9 +74,6 @@ export default function ApplyForm() {
     if (!f.status) m.push("status");
     if (!f.hasHighlights) m.push("hasHighlights");
     if (f.hasHighlights === "Yes" && !f.highlights.trim()) m.push("highlights");
-    if (!f.wouldBook) m.push("wouldBook");
-    if (!f.deposit) m.push("deposit");
-    if (!f.dates) m.push("dates");
     return m;
   }
 
@@ -114,7 +96,6 @@ export default function ApplyForm() {
           ...f,
           positions: f.positions.join(", "),
           highlights: f.hasHighlights === "Yes" ? f.highlights : "",
-          priceShown: priceFor(f.region),
           ref,
         }),
       });
@@ -142,7 +123,6 @@ export default function ApplyForm() {
   }
 
   const bad = (k: string) => missing.includes(k);
-  const price = priceFor(f.region);
 
   return (
     <form onSubmit={submit} noValidate className="mt-12 space-y-10">
@@ -258,55 +238,6 @@ export default function ApplyForm() {
             />
           </Field>
         )}
-      </Group>
-
-      <Group title="The trip">
-        <Field
-          id="wouldBook"
-          label={`The package is ${price}, flights not included. Would you book at that price?`}
-          bad={bad("wouldBook")}
-        >
-          <Chips
-            options={["Yes", "Maybe", "No"]}
-            value={f.wouldBook}
-            onChange={(v) => set("wouldBook", v)}
-          />
-        </Field>
-        <Field
-          id="deposit"
-          label="Could you pay a deposit in November to secure a place?"
-          bad={bad("deposit")}
-        >
-          <Chips
-            options={["Yes", "Not sure", "No"]}
-            value={f.deposit}
-            onChange={(v) => set("deposit", v)}
-          />
-        </Field>
-        <Field
-          id="dates"
-          label="Can you be in Dubai for the full 27 December to 5 January?"
-          bad={bad("dates")}
-        >
-          <Chips
-            options={["Yes", "No", "Only part of it"]}
-            value={f.dates}
-            onChange={(v) => set("dates", v)}
-          />
-        </Field>
-        <Field
-          id="notes"
-          label="Anything you'd need to know before booking?"
-          hint="Optional"
-        >
-          <textarea
-            id="f-notes"
-            value={f.notes}
-            onChange={(e) => set("notes", e.target.value)}
-            rows={4}
-            className="w-full resize-y rounded-2xl border border-white/10 bg-card px-4 py-3 text-base text-white placeholder-white/30 outline-none transition focus:border-lime"
-          />
-        </Field>
       </Group>
 
       {/* Honeypot: hidden from people, bots fill it. */}

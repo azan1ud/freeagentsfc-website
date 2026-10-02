@@ -4,13 +4,13 @@ import type { Metadata } from "next";
 import ApplyForm from "./ApplyForm";
 
 export const metadata: Metadata = {
-  title: "Dubai · 27 Dec – 5 Jan · Apply · FreeAgentsFC",
+  title: "Dubai · The Free Agent Showcase · Apply · FreeAgentsFC",
   description:
-    "Apply for a place on the FreeAgentsFC Dubai trip, 27 December to 5 January.",
+    "Apply for a place at the FreeAgentsFC Free Agent Showcase in Dubai.",
   openGraph: {
-    title: "FreeAgentsFC Dubai · 27 Dec – 5 Jan",
+    title: "FreeAgentsFC Dubai · The Free Agent Showcase",
     description:
-      "Apply for a place on the FreeAgentsFC Dubai trip, 27 December to 5 January.",
+      "Apply for a place at the FreeAgentsFC Free Agent Showcase in Dubai.",
     url: "https://freeagentsfc.com/dubai",
     siteName: "FreeAgentsFC",
     type: "website",
@@ -49,7 +49,7 @@ export default function DubaiPage() {
             className="rise mt-4 text-lg font-semibold text-white/90"
             style={{ ["--d" as string]: "0.16s" }}
           >
-            27 December – 5 January
+            The Free Agent Showcase
           </p>
           <p
             className="rise mt-3 max-w-lg text-white/60"

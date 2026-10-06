@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 const REGIONS = ["UK", "Europe", "UAE", "Other Middle East", "Other"];
 const POSITIONS = ["GK", "RB", "CB", "LB", "DM", "CM", "AM", "RW", "LW", "ST"];
 // What the fee question showed (stored on each application as `priceShown`).
-const PRICE_SHOWN = "£3,000, flights not included; early bird £2,750 by 6 Nov; £500 deposit in Nov then instalments";
+const PRICE_SHOWN = "£3,000, flights not included; early bird £2,750 by 6 Nov; £500 deposit from 1 Nov then instalments";
 
 const STATUSES = [
   "Free agent",
@@ -349,8 +349,10 @@ export default function ApplyForm() {
               <span className="mt-0.5 font-bold text-lime">✓</span>
               <span>
                 Secure your place with a{" "}
-                <span className="font-semibold text-white">£500 deposit</span> in
-                November, then pay the rest in instalments.
+                <span className="font-semibold text-white">£500 deposit</span>{" "}
+                from{" "}
+                <span className="font-semibold text-white">1 November</span>,
+                then pay the rest in instalments.
               </span>
             </li>
           </ul>

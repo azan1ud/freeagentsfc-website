@@ -28,8 +28,6 @@ type Form = {
   passportCountry: string;
   transfermarkt: string;
   transfermarktLink: string;
-  payFee: string;
-  feeConcern: string;
   website: string; // honeypot, stays empty for humans
 };
 
@@ -48,8 +46,6 @@ const EMPTY: Form = {
   passportCountry: "",
   transfermarkt: "",
   transfermarktLink: "",
-  payFee: "",
-  feeConcern: "",
   website: "",
 };
 
@@ -93,8 +89,6 @@ export default function ApplyForm() {
     if (f.passport === "Yes" && !f.passportCountry.trim()) m.push("passportCountry");
     if (!f.transfermarkt) m.push("transfermarkt");
     if (f.transfermarkt === "Yes" && !f.transfermarktLink.trim()) m.push("transfermarktLink");
-    if (!f.payFee) m.push("payFee");
-    if ((f.payFee === "No" || f.payFee === "Maybe") && !f.feeConcern.trim()) m.push("feeConcern");
     return m;
   }
 
@@ -126,8 +120,6 @@ export default function ApplyForm() {
           passport: f.passport,
           passportCountry: f.passport === "Yes" ? f.passportCountry : "",
           transfermarkt: f.transfermarkt === "Yes" ? f.transfermarktLink : "No",
-          payFee: f.payFee,
-          feeConcern: f.payFee === "Yes" ? "" : f.feeConcern,
           priceShown: PRICE_SHOWN,
           website: f.website,
           ref,
@@ -357,35 +349,6 @@ export default function ApplyForm() {
             </li>
           </ul>
         </div>
-        <Field
-          id="payFee"
-          label="Would you be willing to pay this to take part?"
-          bad={bad("payFee")}
-        >
-          <Chips
-            options={["Yes", "Maybe", "No"]}
-            value={f.payFee}
-            onChange={(v) => set("payFee", v)}
-          />
-        </Field>
-        {(f.payFee === "Maybe" || f.payFee === "No") && (
-          <Field
-            id="feeConcern"
-            label="What's holding you back?"
-            hint="Be honest, it helps us make this work for more players."
-            bad={bad("feeConcern")}
-          >
-            <textarea
-              id="f-feeConcern"
-              value={f.feeConcern}
-              onChange={(e) => set("feeConcern", e.target.value)}
-              rows={3}
-              maxLength={600}
-              className="w-full rounded-2xl border border-white/10 bg-card px-4 py-3 text-base text-white placeholder-white/30 outline-none transition focus:border-lime"
-              placeholder="e.g. the price, the dates, getting time off work…"
-            />
-          </Field>
-        )}
       </Group>
 
       {/* Honeypot: hidden from people, bots fill it. */}

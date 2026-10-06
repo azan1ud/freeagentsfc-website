@@ -10,14 +10,14 @@ const COMMIT_URL = `https://firestore.googleapis.com/v1/${DOCS}:commit?key=${API
 
 // Fields the original rule accepts. The rule requires a string `notes`, so it
 // is always sent (empty unless it carries the fallback summary below).
-const BASE = ["name", "whatsapp", "handle", "region", "age", "positions", "level", "status", "highlights", "ref"] as const;
+const BASE = ["name", "whatsapp", "handle", "region", "age", "positions", "level", "status", "highlights", "ref", "priceShown"] as const;
 // Added 2 Oct (Kamal): need the updated rule to be stored as their own fields.
 const EXTRA = ["passport", "passportCountry", "transfermarkt", "payFee"] as const;
 
 type Fields = Record<string, { stringValue: string }>;
 const str = (v: unknown) => ({ stringValue: String(v ?? "").trim().slice(0, 1000) });
 
-async function commit(fields: Fields) {
+async function commit(fields: Record<string, unknown>) {
   return fetch(COMMIT_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -53,15 +53,20 @@ export async function POST(req: Request) {
   }
   const extra: Fields = {};
   for (const k of EXTRA) extra[k] = str(body[k]);
+  // 6 Oct: "what's holding you back?" (Maybe / No on the fee). The rule has
+  // no top-level field for it, so it rides in the allowed `extra` map.
+  const concern = str(body.feeConcern).stringValue;
+  const more = concern ? { extra: { mapValue: { fields: { feeConcern: str(concern) } } } } : {};
 
-  let res = await commit({ ...base, ...extra });
+  let res = await commit({ ...base, ...extra, ...more });
   if (res.status === 403) {
     // The rule hasn't been updated for the new questions yet: keep the answers,
     // readable, in `notes` (which the current rule accepts) so no application is lost.
     const e = (k: string) => extra[k].stringValue || "-";
     const summary =
       `Passport: ${e("passport")}${extra.passportCountry.stringValue ? ` (${extra.passportCountry.stringValue})` : ""}` +
-      ` | Transfermarkt: ${e("transfermarkt")} | Willing to pay the fee: ${e("payFee")}`;
+      ` | Transfermarkt: ${e("transfermarkt")} | Willing to pay the fee: ${e("payFee")}` +
+      (concern ? ` | Holding back: ${concern}` : "");
     res = await commit({ ...base, notes: str(summary) });
   }
   if (!res.ok) {

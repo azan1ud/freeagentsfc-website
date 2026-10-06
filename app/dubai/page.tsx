@@ -60,6 +60,25 @@ export default function DubaiPage() {
           </p>
         </header>
 
+        {/* What the showcase is, before the form asks about the fee (same
+            claims as the teaser and the 3 Oct DM). */}
+        <ul
+          className="rise mt-8 grid grid-cols-2 gap-3 text-sm"
+          style={{ ["--d" as string]: "0.32s" }}
+        >
+          {[
+            ["10 days", "in Dubai"],
+            ["4 games", "in front of 4 UAE clubs and more"],
+            ["Every match filmed", "and the final day streamed live"],
+            ["Pro-standard pitches", "natural grass, floodlit"],
+          ].map(([big, small]) => (
+            <li key={big} className="rounded-2xl border border-white/10 bg-card p-4">
+              <p className="font-semibold text-white">{big}</p>
+              <p className="mt-1 text-white/55">{small}</p>
+            </li>
+          ))}
+        </ul>
+
         <ApplyForm />
       </div>
     </main>

@@ -38,6 +38,7 @@ type App = {
   passportCountry: string;
   transfermarkt: string;
   payFee: string;
+  feeConcern: string; // "what's holding you back?" (Maybe / No, from 6 Oct)
   ref: string;
   notes: string;
   submittedAt: Date | null;
@@ -86,7 +87,10 @@ function toApp(id: string, d: Record<string, unknown>): App {
     passport: str(d.passport) || fromNotes(1),
     passportCountry: str(d.passportCountry) || fromNotes(2),
     transfermarkt: str(d.transfermarkt) || fromNotes(3),
-    payFee: str(d.payFee) || fromNotes(4),
+    payFee: str(d.payFee) || fromNotes(4).replace(/ \| Holding back: .*$/, ""),
+    feeConcern:
+      str((d.extra as Record<string, unknown> | undefined)?.feeConcern) ||
+      (m ? (m[4].match(/ \| Holding back: (.*)$/)?.[1] ?? "") : ""),
     ref: str(d.ref),
     notes: m ? "" : notes,
     submittedAt: ts instanceof Timestamp ? ts.toDate() : null,
@@ -136,7 +140,7 @@ function toCsv(rows: App[]) {
   const head = [
     "Submitted", "Name", "WhatsApp", "Instagram or X", "Based", "Age", "Positions",
     "Level", "Status", "Highlights", "Passport", "Passport country",
-    "Transfermarkt", "Willing to pay", "Source", "Notes",
+    "Transfermarkt", "Willing to pay", "Holding them back", "Source", "Notes",
   ];
   // Quote everything; a leading = + - @ would run as a formula in Excel/Sheets.
   const cell = (v: string) => {
@@ -148,7 +152,7 @@ function toCsv(rows: App[]) {
       a.submittedAt ? `${fmtDay.format(a.submittedAt)} ${fmtTime.format(a.submittedAt)}` : "",
       a.name, a.whatsapp, a.handle, a.region, a.age, a.positions.join(", "),
       a.level, a.status, a.highlights, a.passport, a.passportCountry,
-      a.transfermarkt, a.payFee, a.ref,
+      a.transfermarkt, a.payFee, a.feeConcern, a.ref,
       [a.notes, ...a.earlier.map(([k, v]) => `${k}: ${v}`)].filter(Boolean).join(" | "),
     ]
       .map(cell)
@@ -404,7 +408,7 @@ function Dashboard({ apps, seenBefore, now }: { apps: App[]; seenBefore: number 
       if (onlyHighlights && !webLink(a.highlights)) return false;
       if (onlyTm && !webLink(a.transfermarkt)) return false;
       if (needle) {
-        const hay = [a.name, a.handle, a.region, a.level, a.status, a.passportCountry, a.whatsapp, a.ref].join(" ").toLowerCase();
+        const hay = [a.name, a.handle, a.region, a.level, a.status, a.passportCountry, a.whatsapp, a.ref, a.feeConcern].join(" ").toLowerCase();
         if (!hay.includes(needle)) return false;
       }
       return true;
@@ -632,6 +636,11 @@ function Card({ a, isNew, now }: { a: App; isNew: boolean; now: number }) {
       )}
       {a.level && <p className={`mt-3 text-sm text-white/80 ${open ? "" : "line-clamp-2"}`}>{a.level}</p>}
       {a.status && <p className="mt-1 text-xs text-white/45">{a.status}</p>}
+      {a.feeConcern && (
+        <p className="mt-3 rounded-xl bg-amber-400/10 px-3 py-2 text-sm text-amber-200">
+          <span className="font-semibold">Holding back:</span> {a.feeConcern}
+        </p>
+      )}
 
       <div className="mt-4 flex flex-wrap gap-2 text-xs font-bold">
         <span className={`rounded-full px-2.5 py-1 ${FEE_STYLE[a.payFee] ?? "bg-white/5 text-white/40"}`}>

@@ -5,6 +5,10 @@ import { useEffect, useState } from "react";
 const REGIONS = ["UK", "Europe", "UAE", "Other Middle East", "Other"];
 const POSITIONS = ["GK", "RB", "CB", "LB", "DM", "CM", "AM", "RW", "LW", "ST"];
 
+// 16 Oct (Kamal): no price on the form, just this; stored as `priceShown`.
+const FEE_QUESTION =
+  "This is a private showcase event which comes at a fee. Are you able to pay? Flights excluded";
+
 const STATUSES = [
   "Free agent",
   "Leaving my club",
@@ -26,6 +30,7 @@ type Form = {
   passportCountry: string;
   transfermarkt: string;
   transfermarktLink: string;
+  payFee: string;
   website: string; // honeypot, stays empty for humans
 };
 
@@ -44,6 +49,7 @@ const EMPTY: Form = {
   passportCountry: "",
   transfermarkt: "",
   transfermarktLink: "",
+  payFee: "",
   website: "",
 };
 
@@ -87,6 +93,7 @@ export default function ApplyForm() {
     if (f.passport === "Yes" && !f.passportCountry.trim()) m.push("passportCountry");
     if (!f.transfermarkt) m.push("transfermarkt");
     if (f.transfermarkt === "Yes" && !f.transfermarktLink.trim()) m.push("transfermarktLink");
+    if (!f.payFee) m.push("payFee");
     return m;
   }
 
@@ -118,9 +125,8 @@ export default function ApplyForm() {
           passport: f.passport,
           passportCountry: f.passport === "Yes" ? f.passportCountry : "",
           transfermarkt: f.transfermarkt === "Yes" ? f.transfermarktLink : "No",
-          // 16 Oct (Kamal): no price on the form any more; the brochure goes
-          // out separately to interested players.
-          priceShown: "",
+          payFee: f.payFee,
+          priceShown: FEE_QUESTION,
           website: f.website,
           ref,
         }),
@@ -318,6 +324,16 @@ export default function ApplyForm() {
             />
           </Field>
         )}
+      </Group>
+
+      <Group title="The showcase">
+        <Field id="payFee" label={FEE_QUESTION} bad={bad("payFee")}>
+          <Chips
+            options={["Yes", "No"]}
+            value={f.payFee}
+            onChange={(v) => set("payFee", v)}
+          />
+        </Field>
       </Group>
 
       {/* Honeypot: hidden from people, bots fill it. */}

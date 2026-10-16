@@ -60,7 +60,7 @@ export default function DubaiPage() {
           </p>
         </header>
 
-        {/* What the showcase is, before the form asks about the fee (same
+        {/* What the showcase is (same
             claims as the teaser and the 3 Oct DM). */}
         <ul
           className="rise mt-8 grid grid-cols-2 gap-3 text-sm"

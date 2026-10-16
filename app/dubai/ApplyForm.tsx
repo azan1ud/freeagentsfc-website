@@ -4,8 +4,6 @@ import { useEffect, useState } from "react";
 
 const REGIONS = ["UK", "Europe", "UAE", "Other Middle East", "Other"];
 const POSITIONS = ["GK", "RB", "CB", "LB", "DM", "CM", "AM", "RW", "LW", "ST"];
-// What the fee question showed (stored on each application as `priceShown`).
-const PRICE_SHOWN = "£3,000, flights not included; early bird £2,750 by 6 Nov; £500 deposit from 1 Nov then instalments";
 
 const STATUSES = [
   "Free agent",
@@ -28,8 +26,6 @@ type Form = {
   passportCountry: string;
   transfermarkt: string;
   transfermarktLink: string;
-  payFee: string;
-  feeConcern: string;
   website: string; // honeypot, stays empty for humans
 };
 
@@ -48,8 +44,6 @@ const EMPTY: Form = {
   passportCountry: "",
   transfermarkt: "",
   transfermarktLink: "",
-  payFee: "",
-  feeConcern: "",
   website: "",
 };
 
@@ -93,8 +87,6 @@ export default function ApplyForm() {
     if (f.passport === "Yes" && !f.passportCountry.trim()) m.push("passportCountry");
     if (!f.transfermarkt) m.push("transfermarkt");
     if (f.transfermarkt === "Yes" && !f.transfermarktLink.trim()) m.push("transfermarktLink");
-    if (!f.payFee) m.push("payFee");
-    if ((f.payFee === "No" || f.payFee === "Maybe") && !f.feeConcern.trim()) m.push("feeConcern");
     return m;
   }
 
@@ -126,9 +118,9 @@ export default function ApplyForm() {
           passport: f.passport,
           passportCountry: f.passport === "Yes" ? f.passportCountry : "",
           transfermarkt: f.transfermarkt === "Yes" ? f.transfermarktLink : "No",
-          payFee: f.payFee,
-          feeConcern: f.payFee === "Yes" ? "" : f.feeConcern,
-          priceShown: PRICE_SHOWN,
+          // 16 Oct (Kamal): no price on the form any more; the brochure goes
+          // out separately to interested players.
+          priceShown: "",
           website: f.website,
           ref,
         }),
@@ -323,66 +315,6 @@ export default function ApplyForm() {
               inputMode="url"
               placeholder="https://www.transfermarkt.co.uk/..."
               autoCapitalize="none"
-            />
-          </Field>
-        )}
-      </Group>
-
-      <Group title="The showcase">
-        <div className="clear-both rounded-3xl border border-lime/25 bg-card p-6">
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-lime">
-            The cost
-          </p>
-          <p className="mt-3 font-display text-5xl uppercase leading-none">
-            £3,000
-          </p>
-          <p className="mt-2 text-sm text-white/60">Flights aren&apos;t included.</p>
-          <ul className="mt-5 space-y-3 text-sm text-white/85">
-            <li className="flex gap-3">
-              <span className="mt-0.5 font-bold text-lime">✓</span>
-              <span>
-                <span className="font-semibold text-white">Early bird: £2,750</span>{" "}
-                if you book by 6 November.
-              </span>
-            </li>
-            <li className="flex gap-3">
-              <span className="mt-0.5 font-bold text-lime">✓</span>
-              <span>
-                Secure your place with a{" "}
-                <span className="font-semibold text-white">£500 deposit</span>{" "}
-                from{" "}
-                <span className="font-semibold text-white">1 November</span>,
-                then pay the rest in instalments.
-              </span>
-            </li>
-          </ul>
-        </div>
-        <Field
-          id="payFee"
-          label="Would you be willing to pay this to take part?"
-          bad={bad("payFee")}
-        >
-          <Chips
-            options={["Yes", "Maybe", "No"]}
-            value={f.payFee}
-            onChange={(v) => set("payFee", v)}
-          />
-        </Field>
-        {(f.payFee === "Maybe" || f.payFee === "No") && (
-          <Field
-            id="feeConcern"
-            label="What's holding you back?"
-            hint="Be honest, it helps us make this work for more players."
-            bad={bad("feeConcern")}
-          >
-            <textarea
-              id="f-feeConcern"
-              value={f.feeConcern}
-              onChange={(e) => set("feeConcern", e.target.value)}
-              rows={3}
-              maxLength={600}
-              className="w-full rounded-2xl border border-white/10 bg-card px-4 py-3 text-base text-white placeholder-white/30 outline-none transition focus:border-lime"
-              placeholder="e.g. the price, the dates, getting time off work…"
             />
           </Field>
         )}

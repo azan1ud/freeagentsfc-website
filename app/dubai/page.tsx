@@ -60,21 +60,24 @@ export default function DubaiPage() {
           </p>
         </header>
 
-        {/* What the showcase is (same
-            claims as the teaser and the 3 Oct DM). */}
+        {/* What the showcase includes (Kamal's list, 16 Oct). */}
         <ul
-          className="rise mt-8 grid grid-cols-2 gap-3 text-sm"
+          className="rise mt-8 space-y-3 text-sm"
           style={{ ["--d" as string]: "0.32s" }}
         >
           {[
-            ["10 days", "in Dubai"],
-            ["4 games", "in front of 4 UAE clubs and more"],
-            ["Every match filmed", "and the final day streamed live"],
-            ["Pro-standard pitches", "natural grass, floodlit"],
-          ].map(([big, small]) => (
-            <li key={big} className="rounded-2xl border border-white/10 bg-card p-4">
-              <p className="font-semibold text-white">{big}</p>
-              <p className="mt-1 text-white/55">{small}</p>
+            ["⚽", "4 full 11-a-side games", "All filmed, all played on Elite Quality Grass in front of UAE clubs from the Pro League down"],
+            ["📈", "Additional coaching throughout the week", "Plus fitness testing with Lyon's Den"],
+            ["🎥", "All games recorded", "Final day broadcast live, your own highlight reel and a performance report"],
+            ["🤝", "Club meetings on day 9", "Right as the UAE January window opens"],
+            ["🏨", "Food, hotel, airport transfers and daily transport", "All included"],
+          ].map(([icon, big, small]) => (
+            <li key={big} className="flex gap-4 rounded-2xl border border-white/10 bg-card p-4">
+              <span className="text-xl leading-none" aria-hidden>{icon}</span>
+              <div>
+                <p className="font-semibold text-white">{big}</p>
+                <p className="mt-1 text-white/55">{small}</p>
+              </div>
             </li>
           ))}
         </ul>

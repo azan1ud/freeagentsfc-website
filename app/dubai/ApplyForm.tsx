@@ -7,7 +7,7 @@ const POSITIONS = ["GK", "RB", "CB", "LB", "DM", "CM", "AM", "RW", "LW", "ST"];
 
 // 16 Oct (Kamal): no price on the form, just this; stored as `priceShown`.
 const FEE_QUESTION =
-  "This is a private showcase event which comes at a fee. Are you able to pay? Flights excluded";
+  "This is a Private showcase event which comes at a fee. Are you able to pay? Flights are not included";
 
 const STATUSES = [
   "Free agent",

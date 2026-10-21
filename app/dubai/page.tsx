@@ -82,6 +82,39 @@ export default function DubaiPage() {
           ))}
         </ul>
 
+        {/* Brochure download (two editions, no public price: the fee comes with each invitation). */}
+        <section
+          className="rise mt-6 rounded-2xl border border-lime/30 bg-card p-5"
+          style={{ ["--d" as string]: "0.4s" }}
+        >
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-lime">
+            The brochure
+          </p>
+          <p className="mt-2 font-semibold text-white">
+            See everything about the ten days before you apply
+          </p>
+          <p className="mt-1 text-sm text-white/55">
+            The format, the schedule, the clubs watching, the hotel and what&apos;s included. PDF, 17 pages.
+          </p>
+          <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+            {[
+              ["/dubai/FreeAgentsFC_Dubai_Showcase_Brochure_UK.pdf", "UK edition"],
+              ["/dubai/FreeAgentsFC_Dubai_Showcase_Brochure_ME.pdf", "Middle East edition"],
+            ].map(([href, label]) => (
+              <a
+                key={href}
+                href={href}
+                download
+                target="_blank"
+                rel="noopener"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-lime px-6 py-3 text-sm font-extrabold uppercase tracking-wide text-ink transition hover:brightness-110"
+              >
+                <span aria-hidden>↓</span> {label}
+              </a>
+            ))}
+          </div>
+        </section>
+
         <ApplyForm />
       </div>
     </main>

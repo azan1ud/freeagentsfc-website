@@ -82,7 +82,7 @@ export default function DubaiPage() {
           ))}
         </ul>
 
-        {/* Brochure download (two editions, no public price: the fee comes with each invitation). */}
+        {/* Brochure download: UK and UAE editions (Azan's final PDFs, 21 Oct). */}
         <section
           className="rise mt-6 rounded-2xl border border-lime/30 bg-card p-5"
           style={{ ["--d" as string]: "0.4s" }}
@@ -94,12 +94,12 @@ export default function DubaiPage() {
             See everything about the ten days before you apply
           </p>
           <p className="mt-1 text-sm text-white/55">
-            The format, the schedule, the clubs watching, the hotel and what&apos;s included. PDF, 17 pages.
+            The format, the schedule, the clubs watching, the hotel and what&apos;s included.
           </p>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
             {[
               ["/dubai/FreeAgentsFC_Dubai_Showcase_Brochure_UK.pdf", "UK edition"],
-              ["/dubai/FreeAgentsFC_Dubai_Showcase_Brochure_ME.pdf", "Middle East edition"],
+              ["/dubai/FreeAgentsFC_Dubai_Showcase_Brochure_UAE.pdf", "UAE edition"],
             ].map(([href, label]) => (
               <a
                 key={href}
